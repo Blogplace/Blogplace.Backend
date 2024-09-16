@@ -30,7 +30,17 @@ jobs:
         run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./
       - name: Code Coverage Report
         run: |
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          chmod +x codecov
+          curl -Os https://cli.codecov.io/latest/linux/codecov
+
+          curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import # One-time step  
+          curl -Os https://cli.codecov.io/latest/linux/codecov
+          curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM
+          curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM.sig
+          gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
+
+          shasum -a 256 -c codecov.SHA256SUM
+          sudo chmod +x codecov
+
           dotnet test Blogplace.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
           ./codecov -f "/Blogplace.Tests/coverage.opencover.xml"
+          ./codecov upload-process -t ${{ secrets.CODECOV_TOKEN }}
