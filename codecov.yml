@@ -2,7 +2,7 @@ coverage:
   status:
     project:
       default:
-        target: todo target: 60%
+        target: 60%
 
 comment:
   layout: " diff, flags, files"
