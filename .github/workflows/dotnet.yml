@@ -28,8 +28,13 @@ jobs:
         run: dotnet build --no-restore
       - name: Test and Code Coverage Report
         run: |
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          chmod +x codecov
+          curl -Os https://cli.codecov.io/latest/linux/codecov
+          curl -Os https://cli.codecov.io/latest/linux/codecov
+          curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM
+          curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM.sig
+          gpg --verify codecov.SHA256SUM.sig codecov.SHA256SUM
+          shasum -a 256 -c codecov.SHA256SUM
+          sudo chmod +x codecov
 
           dotnet test Blogplace.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-          ./codecov -f /Blogplace.Tests/coverage.opencover.xml
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} -f /Blogplace.Tests/coverage.opencover.xml
