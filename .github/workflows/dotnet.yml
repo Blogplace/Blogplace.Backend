@@ -40,4 +40,4 @@ jobs:
           sudo chmod +x codecov
 
           dotnet test Blogplace.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-          ./codecov --verbose upload-process --fail-on-error -t ${{ secrets.CODECOV_TOKEN }} -f "/Blogplace.Tests/coverage.opencover.xml"
+          ./codecov --verbose upload-process --fail-on-error -t ${{ secrets.CODECOV_TOKEN }} -f Blogplace.Tests/coverage.opencover.xml
