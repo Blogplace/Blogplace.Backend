@@ -1,7 +1,7 @@
 # Blogplace.Backend
 
 [![Code Quality](https://www.codefactor.io/repository/github/blogplace/blogplace.backend/badge)](https://www.codefactor.io/repository/github/blogplace/blogplace.backend)
-[![Test Coverage](https://codecov.io/gh/Blogplace/Blogplace.Backend/branch/main/graph/badge.svg?token=lLEREQvQth)](https://codecov.io/gh/Blogplace/Blogplace.Backend)
+[![Test Coverage](https://codecov.io/gh/Blogplace/Blogplace.Backend/graph/badge.svg?token=71BI6043KV)](https://codecov.io/gh/Blogplace/Blogplace.Backend)
 
 ## Zasady
 - Lista zadań jest w [Issues](https://github.com/Blogplace/Blogplace.Backend/issues)
