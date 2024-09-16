@@ -32,4 +32,4 @@ jobs:
           sudo chmod +x codecov
 
           dotnet test Blogplace.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-          ./codecov -t ${{ secrets.CODECOV_TOKEN }} -f Blogplace.Tests/coverage.opencover.xml
+          ./codecov -f /Blogplace.Tests/coverage.opencover.xml
