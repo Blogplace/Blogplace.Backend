@@ -1,18 +1,22 @@
-using Blogplace.Web;
 using Serilog;
 
-// Setup serilog as default logger
-Log.Logger = Logger.CreateDefaultAppLogger();
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateLogger();
 
 try
 {
     Log.Information("Starting web application");
 
     var builder = WebApplication.CreateBuilder(args);
+    builder.Host.UseSerilog((context, loggerConfiguration) =>
+    {
+        loggerConfiguration.WriteTo.Console();
+        loggerConfiguration.ReadFrom.Configuration(context.Configuration);
+    });
 
     // Add services to the container.
 
-    builder.Services.AddSerilog();
     builder.Services.AddControllers();
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
