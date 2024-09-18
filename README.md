@@ -2,6 +2,7 @@
 
 [![Code Quality](https://www.codefactor.io/repository/github/blogplace/blogplace.backend/badge)](https://www.codefactor.io/repository/github/blogplace/blogplace.backend)
 [![Test Coverage](https://codecov.io/gh/Blogplace/Blogplace.Backend/graph/badge.svg?token=71BI6043KV)](https://codecov.io/gh/Blogplace/Blogplace.Backend)
+[![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/Pm8ZK9um3M?style=flat)](https://discord.gg/Pm8ZK9um3M)
 
 ## Zasady
 #### Ogólne
@@ -13,3 +14,6 @@
 - Każdy PR zawiera test, który udowadnia że wprowadzone zmiany działają i niczego nie psują
 #### Unit Testy
 - Zalecamy używać [fluentassertions](https://fluentassertions.com/), dzięki którym testy mają czytelniejszy opis w postaci `co gdzie i jak` zamiast `expected true but found false`.
+
+## Discord
+Zapraszamy na nasz serwer [Discord](https://discord.gg/Pm8ZK9um3M).
