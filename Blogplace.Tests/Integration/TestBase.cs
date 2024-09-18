@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Blogplace.Web.Auth;
+using Blogplace.Web.Commons.Consts;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Diagnostics.CodeAnalysis;
@@ -10,8 +12,10 @@ namespace Blogplace.Tests.Integration;
 public abstract class TestBase
 {
     protected readonly WebApplicationFactory<Program> _factory = new();
+    protected Guid currentUserId = Guid.NewGuid();
+    protected string urlBaseV1 = "/public/api/v1.0";
 
-    protected ApiClient CreateClient(Action<IServiceCollection>? registerServices = null/*, bool mobileSession = false, bool withSession = true, string? customToken = null*/)
+    protected ApiClient CreateClient(Action<IServiceCollection>? registerServices = null, bool withSession = true/*, bool mobileSession = false, bool withSession = true, string? customToken = null*/)
     {
         var client = this._factory
             .WithWebHostBuilder(builder => builder.ConfigureServices(x => registerServices?.Invoke(x)))
@@ -22,18 +26,18 @@ public abstract class TestBase
         //    return new(client, customToken);
         //}
 
-        //if (withSession)
-        //{
-        //    var authManager = this._factory.Services.GetService<IAuthManager>()!;
-        //    var token = authManager.CreateToken(this.currentUserId, mobileSession ? AuthConsts.ROLE_PHONE : AuthConsts.ROLE_WEB).AccessToken;
-        //    return new(client, token);
-        //}
+        if (withSession)
+        {
+            var authManager = this._factory.Services.GetService<IAuthManager>()!;
+            var token = authManager.CreateToken(this.currentUserId, AuthConsts.ROLE_WEB).AccessToken;
+            return new(client, token);
+        }
 
         return new(client);
     }
 }
 
-public class ApiClient(HttpClient client/*, string? token = null*/)
+public class ApiClient(HttpClient client, string? token = null)
 {
     public async Task<HttpResponseMessage> PostAsync([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? value = null)
     {
@@ -46,10 +50,10 @@ public class ApiClient(HttpClient client/*, string? token = null*/)
                 "application/json");
         }
 
-        //if (token != null)
-        //{
-        //    message.Headers.Add("Cookie", $"{AuthConsts.ACCESS_TOKEN_COOKIE}={token};");
-        //}
+        if (token != null)
+        {
+            message.Headers.Add("Cookie", $"{AuthConsts.ACCESS_TOKEN_COOKIE}={token};");
+        }
         var result = await client.SendAsync(message);
         return result;
     }

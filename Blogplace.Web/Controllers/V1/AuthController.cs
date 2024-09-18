@@ -14,7 +14,7 @@ public sealed class AuthController(IOptions<CookieOptions> cookieOptions, IAuthM
 
     [HttpPost]
     [AllowAnonymous]
-    public Task Login()
+    public Task Signin()
     {
         var token = authManager.CreateToken(Guid.NewGuid());
         this.AddCookie(AuthConsts.ACCESS_TOKEN_COOKIE, token.AccessToken);
@@ -23,7 +23,7 @@ public sealed class AuthController(IOptions<CookieOptions> cookieOptions, IAuthM
 
     [HttpPost]
     [AllowAnonymous]
-    public Task Logout()
+    public Task Signout()
     {
         this.DeleteCookie(AuthConsts.ACCESS_TOKEN_COOKIE);
         return Task.CompletedTask;
