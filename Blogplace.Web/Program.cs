@@ -1,3 +1,4 @@
+using Blogplace.Web;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -14,29 +15,35 @@ try
         loggerConfiguration.WriteTo.Console();
         loggerConfiguration.ReadFrom.Configuration(context.Configuration);
     });
-
-    // Add services to the container.
-
     builder.Services.AddControllers();
-    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
-    var app = builder.Build();
+    builder.Services
+        .SetupAuth(builder.Configuration)
+        .SetupMediatr();
 
-    // Configure the HTTP request pipeline.
+    var app = builder.Build();
     if (app.Environment.IsDevelopment())
     {
-        _ = app.UseSwagger();
-        _ = app.UseSwaggerUI();
+        app.UseSwagger().UseSwaggerUI();
     }
 
     app.UseHttpsRedirection();
 
+    app.UseCors(x => x
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials()
+        .WithOrigins("http://localhost:3000" /*all frontend urls*/));
+    app.UseCookiePolicy(new CookiePolicyOptions()
+    {
+        MinimumSameSitePolicy = SameSiteMode.None
+    });
+    app.UseAuthentication();
     app.UseAuthorization();
 
     app.MapControllers();
-
     app.Run();
 }
 catch (Exception ex)
