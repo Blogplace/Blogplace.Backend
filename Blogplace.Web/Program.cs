@@ -1,4 +1,4 @@
-using AutoCall.WebApi;
+using Blogplace.Web;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()

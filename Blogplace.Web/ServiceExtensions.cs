@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
 
-namespace AutoCall.WebApi;
+namespace Blogplace.Web;
 
 public static class ServiceExtensions
 {
