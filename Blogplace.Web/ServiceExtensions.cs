@@ -1,6 +1,7 @@
 using Blogplace.Web.Auth;
 using Blogplace.Web.Commons.Consts;
 using Blogplace.Web.Configuration;
+using Blogplace.Web.Infrastructure.Database;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -125,6 +126,13 @@ public static class ServiceExtensions
 
         services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssemblies(assemblies));
+
+        return services;
+    }
+
+    public static IServiceCollection SetupRepositories(this IServiceCollection services)
+    {
+        services.AddSingleton<IArticlesRepository, ArticlesRepository>();
 
         return services;
     }
