@@ -64,24 +64,24 @@ public class UpdateArticleRequestHandler(SessionStorage sessionStorage, IArticle
         //todo get only author of article
         var article = await repository.Get(request.Id);
 
-        if (article.AuthorId != sessionStorage.UserId) 
+        if (article.AuthorId != sessionStorage.UserId)
         {
             throw new ArgumentException("Requester is not author of article");
         }
 
-        if(request.NewTitle != null) 
+        if (request.NewTitle != null)
         {
             article.Title = request.NewTitle;
             isChanged = true;
         }
 
-        if(request.NewContent != null) 
+        if (request.NewContent != null)
         {
             article.Content = request.NewContent;
             isChanged = true;
         }
 
-        if(isChanged)
+        if (isChanged)
         {
             await repository.Update(article);
         }
