@@ -55,7 +55,7 @@ public class SearchArticlesRequestHandler(IArticlesRepository repository) : IReq
     }
 }
 
-public record UpdateArticleRequest(Guid Id, string? NewTitle, string? NewContent) : IRequest;
+public record UpdateArticleRequest(Guid Id, string? NewTitle = null, string? NewContent = null) : IRequest;
 public class UpdateArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository) : IRequestHandler<UpdateArticleRequest>
 {
     public async Task Handle(UpdateArticleRequest request, CancellationToken cancellationToken)

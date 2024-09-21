@@ -60,7 +60,8 @@ public class ApiClient(HttpClient client, string? token = null)
         return result;
     }
 
-    //public ApiClient WithDifferentToken(string newToken) => new(client, newToken);
+    public ApiClient WithDifferentToken(string newToken) => new(client, newToken);
+    public ApiClient WithoutToken() => new(client);
 
     //todo better GET or use only POST
     public async Task<HttpResponseMessage> GetAsync([StringSyntax(StringSyntaxAttribute.Uri)] string url)
