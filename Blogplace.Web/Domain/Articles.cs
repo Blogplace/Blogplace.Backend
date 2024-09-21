@@ -20,7 +20,7 @@ public record ArticleSmallDto(Guid Id, string Title, DateTime CreatedAt, DateTim
 
 public record CreateArticleResponse(Guid Id);
 public record CreateArticleRequest(string Title, string Content) : IRequest<CreateArticleResponse>;
-public class CreateArticleRequestHandler(SessionStorage sessionStorage, IArticlesRepository repository) : IRequestHandler<CreateArticleRequest, CreateArticleResponse>
+public class CreateArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository) : IRequestHandler<CreateArticleRequest, CreateArticleResponse>
 {
     public async Task<CreateArticleResponse> Handle(CreateArticleRequest request, CancellationToken cancellationToken)
     {
@@ -56,7 +56,7 @@ public class SearchArticlesRequestHandler(IArticlesRepository repository) : IReq
 }
 
 public record UpdateArticleRequest(Guid Id, string? NewTitle, string? NewContent) : IRequest;
-public class UpdateArticleRequestHandler(SessionStorage sessionStorage, IArticlesRepository repository) : IRequestHandler<UpdateArticleRequest>
+public class UpdateArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository) : IRequestHandler<UpdateArticleRequest>
 {
     public async Task Handle(UpdateArticleRequest request, CancellationToken cancellationToken)
     {
@@ -89,7 +89,7 @@ public class UpdateArticleRequestHandler(SessionStorage sessionStorage, IArticle
 }
 
 public record DeleteArticleRequest(Guid Id) : IRequest;
-public class DeleteArticleRequestHandler(SessionStorage sessionStorage, IArticlesRepository repository) : IRequestHandler<DeleteArticleRequest>
+public class DeleteArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository) : IRequestHandler<DeleteArticleRequest>
 {
     public async Task Handle(DeleteArticleRequest request, CancellationToken cancellationToken)
     {

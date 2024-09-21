@@ -5,6 +5,7 @@ using Blogplace.Web.Infrastructure.Database;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
@@ -120,15 +121,7 @@ public static class ServiceExtensions
 
     public static IServiceCollection SetupMediatr(this IServiceCollection services)
     {
-        var assemblies = typeof(Program)
-            .Assembly
-            .GetReferencedAssemblies()
-            .Select(Assembly.Load)
-            .ToArray();
-
-        services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssemblies(assemblies));
-
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
         return services;
     }
 
