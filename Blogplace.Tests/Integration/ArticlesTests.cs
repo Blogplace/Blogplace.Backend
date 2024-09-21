@@ -37,13 +37,13 @@ public class ArticlesTests : TestBase
         //Assert
         createResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
         var articleId = (await createResponse.Content.ReadFromJsonAsync<CreateArticleResponse>())!.Id;
-        
+
         var result = await this.GetArticleById(client, articleId, anonymous: true);
 
         result.Id.Should().Be(articleId);
         result.Title.Should().Be(createRequest.Title);
         result.Content.Should().Be(createRequest.Content);
-        result.AuthorId.Should().Be(currentUserId);
+        result.AuthorId.Should().Be(this.currentUserId);
         result.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
     }
@@ -84,7 +84,7 @@ public class ArticlesTests : TestBase
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
     }
 
-    [Test] //todo try to update article not as author
+    [Test]
     public async Task Update_ArticleShouldBeUpdated()
     {
         //Arrange
@@ -103,10 +103,32 @@ public class ArticlesTests : TestBase
         result.Id.Should().Be(articleId);
         result.Title.Should().Be(updateRequest.NewTitle);
         result.Content.Should().Be(updateRequest.NewContent);
-        result.AuthorId.Should().Be(currentUserId);
+        result.AuthorId.Should().Be(this.currentUserId);
         result.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().NotBe(result.CreatedAt);
+    }
+
+    [Test]
+    public async Task Update_ArticleShouldNotBeUpdatedByOtherUser()
+    {
+        //Arrange
+        var client = this.CreateClient(withSession: true);
+        var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
+
+        var otherClient = client.WithDifferentToken();
+
+        var updateRequest = new UpdateArticleRequest(articleId, "NEW_TITLE", "NEW_CONTENT");
+
+        //Act
+        var updateResponse = await otherClient.PostAsync($"{this.urlBaseV1}/Articles/Update", updateRequest);
+
+        //Assert
+        updateResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        var article = await this.GetArticleById(client, articleId, anonymous: true);
+
+        article.Title.Should().NotBe("NEW_TITLE");
+        article.Content.Should().NotBe("NEW_CONTENT");
     }
 
     [Test]
@@ -123,7 +145,7 @@ public class ArticlesTests : TestBase
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
     }
 
-    [Test] //todo try to delete article not as author
+    [Test]
     public async Task Delete_ShouldDelete()
     {
         //Arrange
@@ -138,6 +160,26 @@ public class ArticlesTests : TestBase
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
         //todo get should return 404 Not Found
+    }
+
+    [Test]
+    public async Task Delete_ShouldNotBeDeletedByOtherUser()
+    {
+        //Arrange
+        var client = this.CreateClient(withSession: true);
+        var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
+
+        var otherClient = client.WithDifferentToken();
+
+        var request = new DeleteArticleRequest(articleId);
+
+        //Act
+        var response = await otherClient.PostAsync($"{this.urlBaseV1}/Articles/Delete", request);
+
+        //Assert
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        var article = await this.GetArticleById(client, articleId, anonymous: true);
+        article.Should().NotBeNull();
     }
 
     private async Task<Guid> CreateArticle(ApiClient client, string title, string content)

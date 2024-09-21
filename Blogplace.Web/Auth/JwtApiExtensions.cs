@@ -1,4 +1,5 @@
 ﻿using Blogplace.Web.Commons.Consts;
+using Blogplace.Web.Exceptions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
@@ -36,6 +37,7 @@ public static class JwtApiExtensions
             //}
 
             await next();
+
         });
         return app;
     }
