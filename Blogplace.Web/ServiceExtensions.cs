@@ -1,9 +1,11 @@
 using Blogplace.Web.Auth;
 using Blogplace.Web.Commons.Consts;
 using Blogplace.Web.Configuration;
+using Blogplace.Web.Infrastructure.Database;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
@@ -17,8 +19,10 @@ public static class ServiceExtensions
         services.AddOptions<AuthOptions>().Bind(config.GetSection("Auth")).ValidateDataAnnotations();
         services.AddOptions<CookieOptions>().Bind(config.GetSection("Auth:Cookie")).ValidateDataAnnotations();
 
+        services.AddScoped<ISessionStorage, SessionStorage>();
+
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        services.AddSingleton<IAuthorizationHandler, SessionCheckHandler>();
+        services.AddScoped<IAuthorizationHandler, SessionCheckHandler>();
         services.AddSingleton<IAuthManager, AuthManager>();
 
         services.AddAuthorizationBuilder()
@@ -117,14 +121,13 @@ public static class ServiceExtensions
 
     public static IServiceCollection SetupMediatr(this IServiceCollection services)
     {
-        var assemblies = typeof(Program)
-            .Assembly
-            .GetReferencedAssemblies()
-            .Select(Assembly.Load)
-            .ToArray();
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+        return services;
+    }
 
-        services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssemblies(assemblies));
+    public static IServiceCollection SetupRepositories(this IServiceCollection services)
+    {
+        services.AddSingleton<IArticlesRepository, ArticlesRepository>();
 
         return services;
     }

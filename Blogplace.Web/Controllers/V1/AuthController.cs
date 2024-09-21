@@ -1,6 +1,5 @@
 ﻿using Blogplace.Web.Auth;
 using Blogplace.Web.Commons.Consts;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -16,7 +15,7 @@ public sealed class AuthController(IOptions<CookieOptions> cookieOptions, IAuthM
     [AllowAnonymous]
     public Task Signin()
     {
-        var token = authManager.CreateToken(Guid.NewGuid());
+        var token = this.authManager.CreateToken(Guid.NewGuid());
         this.AddCookie(AuthConsts.ACCESS_TOKEN_COOKIE, token.AccessToken);
         return Task.CompletedTask;
     }

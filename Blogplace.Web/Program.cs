@@ -21,7 +21,8 @@ try
 
     builder.Services
         .SetupAuth(builder.Configuration)
-        .SetupMediatr();
+        .SetupMediatr()
+        .SetupRepositories();
 
     var app = builder.Build();
     if (app.Environment.IsDevelopment())

@@ -1,10 +1,9 @@
 using Blogplace.Web.Commons.Consts;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 
 namespace Blogplace.Web.Auth;
 
-public class SessionCheckHandler(IHttpContextAccessor contextAccessor)
+public class SessionCheckHandler(IHttpContextAccessor contextAccessor, ISessionStorage sessionStorage)
     : AuthorizationHandler<SessionCheckRequirement>
 {
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SessionCheckRequirement requirement)
@@ -38,6 +37,9 @@ public class SessionCheckHandler(IHttpContextAccessor contextAccessor)
         //    context.Fail();
         //    return Task.CompletedTask;
         //}
+        var userId = context.User!.Identity!.Name!;
+        sessionStorage.SetUserId(Guid.Parse(userId));
+
         context.Succeed(requirement);
         return Task.CompletedTask;
     }
