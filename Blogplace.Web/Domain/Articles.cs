@@ -5,9 +5,10 @@ namespace Blogplace.Web.Domain;
 public class Article(Guid id, string title, string content)
 {
     public Guid Id { get; } = id;
-    public string Title { get; } = title;
-    public string Content { get; } = content;
+    public string Title { get; set; } = title;
+    public string Content { get; set; } = content;
     public DateTime CreatedAt { get; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 
 public record CreateArticleResponse;

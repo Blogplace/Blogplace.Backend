@@ -2,9 +2,18 @@
 
 namespace Blogplace.Web.Infrastructure.Database;
 
-public class ArticlesRepository
+public interface IArticlesRepository
 {
-    private readonly List<Article>? _articles;
+    Task Add(Article article);
+    Task Delete(Guid id);
+    Task<Article> Get(Guid id);
+    Task<IEnumerable<Article>> Search();
+    Task Update(Article article);
+}
+
+public class ArticlesRepository : IArticlesRepository
+{
+    private readonly List<Article> _articles = [];
 
     public Task Add(Article article)
     {
@@ -24,14 +33,19 @@ public class ArticlesRepository
         return Task.FromResult(results!);
     }
 
-    public void Update(Guid id, )
+    public Task Update(Article article)
     {
-        var item = this._articles.Single(x => x.Id == id);
-        item.Title = "a";
+        var item = this._articles.Single(x => x.Id == article.Id);
+        item.Title = article.Title;
+        item.Content = article.Content;
+        item.UpdatedAt = DateTime.UtcNow;
+        return Task.CompletedTask;
     }
 
-    public void Delete(Guid id)
+    public Task Delete(Guid id)
     {
-
+        var item = this._articles.Single(x => x.Id == id);
+        this._articles.Remove(item);
+        return Task.CompletedTask;
     }
 }
