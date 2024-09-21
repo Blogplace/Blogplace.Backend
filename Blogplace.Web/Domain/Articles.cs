@@ -1,4 +1,5 @@
 ﻿using Blogplace.Web.Auth;
+using Blogplace.Web.Exceptions;
 using Blogplace.Web.Infrastructure.Database;
 using MediatR;
 
@@ -66,7 +67,7 @@ public class UpdateArticleRequestHandler(ISessionStorage sessionStorage, IArticl
 
         if (article.AuthorId != sessionStorage.UserId)
         {
-            throw new ArgumentException("Requester is not author of article");
+            throw new UserNotAuthorizedException("Requester is not author of article");
         }
 
         if (request.NewTitle != null)
@@ -97,7 +98,7 @@ public class DeleteArticleRequestHandler(ISessionStorage sessionStorage, IArticl
         var article = await repository.Get(request.Id);
         if (article.AuthorId != sessionStorage.UserId)
         {
-            throw new ArgumentException("Requester is not author of article");
+            throw new UserNotAuthorizedException("Requester is not author of article");
         }
 
         await repository.Delete(request.Id);

@@ -26,19 +26,19 @@ public abstract class TestBase
         //    return new(client, customToken);
         //}
 
+        var authManager = this._factory.Services.GetService<IAuthManager>()!;
         if (withSession)
         {
-            var authManager = this._factory.Services.GetService<IAuthManager>()!;
             var userId = customUserId ?? this.currentUserId;
             var token = authManager.CreateToken(userId, AuthConsts.ROLE_WEB).AccessToken;
-            return new(client, token);
+            return new(client, authManager, token);
         }
 
-        return new(client);
+        return new(client, authManager);
     }
 }
 
-public class ApiClient(HttpClient client, string? token = null)
+public class ApiClient(HttpClient client, IAuthManager authManager, string? token = null)
 {
     public async Task<HttpResponseMessage> PostAsync([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? value = null)
     {
@@ -60,8 +60,18 @@ public class ApiClient(HttpClient client, string? token = null)
         return result;
     }
 
-    public ApiClient WithDifferentToken(string newToken) => new(client, newToken);
-    public ApiClient WithoutToken() => new(client);
+    public ApiClient WithDifferentToken(Guid? userId = null, string? newToken = null)
+    {
+        if (newToken == null)
+        {
+            var newUserId = userId ?? Guid.NewGuid();
+            newToken = authManager.CreateToken(newUserId, AuthConsts.ROLE_WEB).AccessToken;
+        }
+
+        return new(client, authManager, newToken);
+    }
+
+    public ApiClient WithoutToken() => new(client, authManager);
 
     //todo better GET or use only POST
     public async Task<HttpResponseMessage> GetAsync([StringSyntax(StringSyntaxAttribute.Uri)] string url)

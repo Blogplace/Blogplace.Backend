@@ -15,7 +15,7 @@ public sealed class AuthController(IOptions<CookieOptions> cookieOptions, IAuthM
     [AllowAnonymous]
     public Task Signin()
     {
-        var token = this.authManager.CreateToken(Guid.NewGuid());
+        var token = this.authManager.CreateToken(Guid.NewGuid(), AuthConsts.ROLE_WEB);
         this.AddCookie(AuthConsts.ACCESS_TOKEN_COOKIE, token.AccessToken);
         return Task.CompletedTask;
     }

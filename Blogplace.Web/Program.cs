@@ -44,6 +44,8 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
 
+    app.MapCustomException();
+
     app.MapControllers();
     app.Run();
 }
