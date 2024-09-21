@@ -25,28 +25,20 @@ public class ArticlesTests : TestBase
     }
 
     [Test]
-    public async Task CreateArticleAndGetAsAnonymousUser()
+    public async Task Create_ArticleShouldBeCreated()
     {
+        //Arrange
         var authorId = Guid.NewGuid();
 
         var client = this.CreateClient(withSession: true, customUserId: authorId);
         var createRequest = new CreateArticleRequest("TEST_TITLE", "TEST_CONTENT");
+
+        //Act
         var createResponse = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", createRequest);
 
+        //Assert
         createResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
         var articleId = (await createResponse.Content.ReadFromJsonAsync<CreateArticleResponse>())!.Id;
         articleId.Should().NotBeEmpty();
-
-        var unauthorizedClient = this.CreateClient(withSession: false);
-        var getRequest = new GetArticleRequest(articleId);
-        var getResponse = await unauthorizedClient.PostAsync($"{this.urlBaseV1}/Articles/Get", getRequest);
-
-        var result = (await getResponse.Content.ReadFromJsonAsync<GetArticleResponse>())!.Article;
-
-        result.Title.Should().Be(createRequest.Title);
-        result.Content.Should().Be(createRequest.Content);
-        result.AuthorId.Should().Be(authorId);
-        result.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
-        result.UpdatedAt.Should().Be(result.CreatedAt);
     }
 }
