@@ -18,6 +18,8 @@ public static class ServiceExtensions
         services.AddOptions<AuthOptions>().Bind(config.GetSection("Auth")).ValidateDataAnnotations();
         services.AddOptions<CookieOptions>().Bind(config.GetSection("Auth:Cookie")).ValidateDataAnnotations();
 
+        services.AddScoped<ISessionStorage, SessionStorage>();
+
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.AddSingleton<IAuthorizationHandler, SessionCheckHandler>();
         services.AddSingleton<IAuthManager, AuthManager>();
