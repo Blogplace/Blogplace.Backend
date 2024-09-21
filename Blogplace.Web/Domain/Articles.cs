@@ -32,26 +32,55 @@ public record GetArticleResponse(Article article); //todo dto
 public record GetArticleRequest(Guid Id) : IRequest<GetArticleResponse>;
 public class GetArticleRequestHandler(IArticlesRepository repository) : IRequestHandler<GetArticleRequest, GetArticleResponse>
 {
-    public Task<GetArticleResponse> Handle(GetArticleRequest request, CancellationToken cancellationToken) => throw new NotImplementedException();
+    public async Task<GetArticleResponse> Handle(GetArticleRequest request, CancellationToken cancellationToken)
+    {
+        var result = await repository.Get(request.Id);
+        return new GetArticleResponse(result);
+    }
 }
 
 public record SearchArticlesResponse(IEnumerable<Article> articles); //todo light dtos
 public record SearchArticlesRequest : IRequest<SearchArticlesResponse>; //todo filters
 public class SearchArticlesRequestHandler(IArticlesRepository repository) : IRequestHandler<SearchArticlesRequest, SearchArticlesResponse>
 {
-    public Task<SearchArticlesResponse> Handle(SearchArticlesRequest request, CancellationToken cancellationToken) => throw new NotImplementedException();
+    public async Task<SearchArticlesResponse> Handle(SearchArticlesRequest request, CancellationToken cancellationToken)
+    {
+        var results = await repository.Search();
+        return new SearchArticlesResponse(results);
+    }
 }
 
-public record UpdateArticleResponse;
-public record UpdateArticleRequest : IRequest<UpdateArticleResponse>;
-public class UpdateArticleRequestHandler(IArticlesRepository repository) : IRequestHandler<UpdateArticleRequest, UpdateArticleResponse>
+public record UpdateArticleRequest(Guid Id, string? NewTitle, string? NewContent) : IRequest;
+public class UpdateArticleRequestHandler(IArticlesRepository repository) : IRequestHandler<UpdateArticleRequest>
 {
-    public Task<UpdateArticleResponse> Handle(UpdateArticleRequest request, CancellationToken cancellationToken) => throw new NotImplementedException();
+    public async Task Handle(UpdateArticleRequest request, CancellationToken cancellationToken)
+    {
+        var isChanged = false;
+        var article = await repository.Get(request.Id);
+        if(request.NewTitle != null) 
+        {
+            article.Title = request.NewTitle;
+            isChanged = true;
+        }
+
+        if(request.NewContent != null) 
+        {
+            article.Content = request.NewContent;
+            isChanged = true;
+        }
+
+        if(isChanged)
+        {
+            await repository.Update(article);
+        }
+    }
 }
 
-public record DeleteArticleResponse;
-public record DeleteArticleRequest : IRequest<DeleteArticleResponse>;
-public class DeleteArticleRequestHandler(IArticlesRepository repository) : IRequestHandler<DeleteArticleRequest, DeleteArticleResponse>
+public record DeleteArticleRequest(Guid Id) : IRequest;
+public class DeleteArticleRequestHandler(IArticlesRepository repository) : IRequestHandler<DeleteArticleRequest>
 {
-    public Task<DeleteArticleResponse> Handle(DeleteArticleRequest request, CancellationToken cancellationToken) => throw new NotImplementedException();
+    public async Task Handle(DeleteArticleRequest request, CancellationToken cancellationToken)
+    {
+        await repository.Delete(request.Id);
+    }
 }
