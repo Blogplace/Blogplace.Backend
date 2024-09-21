@@ -38,7 +38,6 @@ public static class JwtApiExtensions
 
             await next();
 
-
         });
         return app;
     }
