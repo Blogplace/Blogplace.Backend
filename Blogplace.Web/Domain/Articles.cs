@@ -31,7 +31,7 @@ public class CreateArticleRequestHandler(SessionStorage sessionStorage, IArticle
     }
 }
 
-public record GetArticleResponse(ArticleDto article);
+public record GetArticleResponse(ArticleDto Article);
 public record GetArticleRequest(Guid Id) : IRequest<GetArticleResponse>;
 public class GetArticleRequestHandler(IArticlesRepository repository) : IRequestHandler<GetArticleRequest, GetArticleResponse>
 {
@@ -43,7 +43,7 @@ public class GetArticleRequestHandler(IArticlesRepository repository) : IRequest
     }
 }
 
-public record SearchArticlesResponse(IEnumerable<ArticleSmallDto> articles); //todo light dtos
+public record SearchArticlesResponse(IEnumerable<ArticleSmallDto> Articles); //todo light dtos
 public record SearchArticlesRequest : IRequest<SearchArticlesResponse>; //todo filters
 public class SearchArticlesRequestHandler(IArticlesRepository repository) : IRequestHandler<SearchArticlesRequest, SearchArticlesResponse>
 {
