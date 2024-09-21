@@ -21,7 +21,7 @@ public static class ServiceExtensions
         services.AddScoped<ISessionStorage, SessionStorage>();
 
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        services.AddSingleton<IAuthorizationHandler, SessionCheckHandler>();
+        services.AddScoped<IAuthorizationHandler, SessionCheckHandler>();
         services.AddSingleton<IAuthManager, AuthManager>();
 
         services.AddAuthorizationBuilder()
