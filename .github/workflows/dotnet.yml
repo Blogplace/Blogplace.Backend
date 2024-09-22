@@ -28,9 +28,17 @@ jobs:
         run: dotnet build --no-restore
       - name: Test
         run: dotnet test Blogplace.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-      - name: Codecov
+      - name: Codecov Unit
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./Blogplace.Tests.Unit/coverage.opencover.xml,./Blogplace.Tests.Integration/coverage.opencover.xml
+          file: ./Blogplace.Tests.Unit/coverage.opencover.xml
+          flags: UnitTests
+          fail_ci_if_error: true
+      - name: Codecov Integration
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./Blogplace.Tests.Integration/coverage.opencover.xml
+          flags: IntegrationTests
           fail_ci_if_error: true
