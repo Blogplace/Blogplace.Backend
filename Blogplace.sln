@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blogplace.Tests.Unit", "Blo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blogplace.Tests.Integration", "Blogplace.Tests.Integration\Blogplace.Tests.Integration.csproj", "{93B57502-D2CA-4AA5-A9FB-EC510CA0955C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{720DC949-2F87-4375-BC99-DED7EDC51BF6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BEB6B5E2-2D8D-48B4-9D3C-195086B4DC89} = {720DC949-2F87-4375-BC99-DED7EDC51BF6}
+		{93B57502-D2CA-4AA5-A9FB-EC510CA0955C} = {720DC949-2F87-4375-BC99-DED7EDC51BF6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C4BBB07C-DCB7-4030-8D94-E156672385B9}
