@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using System.Net;
 
-namespace Blogplace.Tests.Integration;
+namespace Blogplace.Tests.Integration.Tests;
 public class AuthTests : TestBase
 {
     [Test]

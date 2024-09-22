@@ -7,7 +7,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Blogplace.Tests.Integration;
+namespace Blogplace.Tests.Integration.Tests;
 public class ArticlesTests : TestBase
 {
     [Test]
