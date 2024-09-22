@@ -4,11 +4,15 @@ namespace Blogplace.Web.Exceptions;
 
 public abstract class CustomException : Exception
 {
-    public CustomException(string? message) : base(message)
+    protected CustomException()
     {
     }
 
-    public CustomException(string? message, Exception? innerException) : base(message, innerException)
+    protected CustomException(string? message) : base(message)
+    {
+    }
+
+    protected CustomException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
 
