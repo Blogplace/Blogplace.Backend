@@ -1,4 +1,6 @@
 using Blogplace.Web;
+using Blogplace.Web.Exceptions;
+using Microsoft.AspNetCore.Diagnostics;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -18,6 +20,8 @@ try
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+
+    builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
     builder.Services
         .SetupAuth(builder.Configuration)
@@ -44,7 +48,7 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
 
-    app.MapCustomException();
+    app.UseExceptionHandler(_ => { });
 
     app.MapControllers();
     app.Run();
