@@ -3,7 +3,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using System.Net;
 
-namespace Blogplace.Tests.Unit;
+namespace Blogplace.Tests.Unit.Tests;
 internal class CustomExceptionHandlerTests
 {
     [Test]
