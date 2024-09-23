@@ -9,6 +9,7 @@ using System.Text;
 namespace Blogplace.Tests.Integration;
 
 [TestFixture]
+[Parallelizable(ParallelScope.All)]
 public abstract class TestBase
 {
     protected readonly WebApplicationFactory<Program> _factory = new();
@@ -40,7 +41,7 @@ public abstract class TestBase
 
 public class ApiClient(HttpClient client, IAuthManager authManager, string? token = null)
 {
-    public async Task<HttpResponseMessage> PostAsync([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? value = null)
+    public async Task<HttpResponseMessage> PostAsync([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? value = null, Dictionary<string, string> customHeaders = null)
     {
         var message = new HttpRequestMessage(HttpMethod.Post, url);
         if (value != null)
@@ -54,6 +55,14 @@ public class ApiClient(HttpClient client, IAuthManager authManager, string? toke
         if (token != null)
         {
             message.Headers.Add("Cookie", $"{AuthConsts.ACCESS_TOKEN_COOKIE}={token};");
+        }
+
+        if (customHeaders != null)
+        {
+            foreach (var header in customHeaders) 
+            {
+                message.Headers.Add(header.Key, header.Value);
+            }
         }
 
         var result = await client.SendAsync(message);
