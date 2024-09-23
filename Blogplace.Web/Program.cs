@@ -1,6 +1,7 @@
 using Blogplace.Web;
 using Blogplace.Web.Auth;
 using Blogplace.Web.Exceptions;
+using Blogplace.Web.Services;
 using Microsoft.AspNetCore.Diagnostics;
 using Serilog;
 using static System.Net.Mime.MediaTypeNames;
@@ -29,7 +30,8 @@ try
     builder.Services
         .SetupAuth(builder.Configuration)
         .SetupMediatr()
-        .SetupRepositories();
+        .SetupRepositories()
+        .SetupEmail(builder.Configuration);
 
     var app = builder.Build();
     if (app.Environment.IsDevelopment())

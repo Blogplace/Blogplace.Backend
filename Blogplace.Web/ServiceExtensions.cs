@@ -1,7 +1,9 @@
 using Blogplace.Web.Auth;
 using Blogplace.Web.Commons.Consts;
 using Blogplace.Web.Configuration;
+using Blogplace.Web.Email;
 using Blogplace.Web.Infrastructure.Database;
+using Blogplace.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -127,6 +129,14 @@ public static class ServiceExtensions
     {
         services.AddSingleton<IArticlesRepository, ArticlesRepository>();
         services.AddSingleton<IUsersRepository, UsersRepository>();
+
+        return services;
+    }
+
+    public static IServiceCollection SetupEmail(this IServiceCollection services, ConfigurationManager config)
+    {
+        services.AddOptions<EmailOptions>().Bind(config.GetSection("Email")).ValidateDataAnnotations();
+        services.AddSingleton<IEmailSender, EmailSender>();
 
         return services;
     }
