@@ -5,9 +5,9 @@ using MediatR;
 
 namespace Blogplace.Web.Domain;
 
-public class Article(Guid id, string title, string content, Guid authorId)
+public class Article(string title, string content, Guid authorId)
 {
-    public Guid Id { get; } = id;
+    public Guid Id { get; } = Guid.NewGuid();
     public string Title { get; set; } = title;
     public string Content { get; set; } = content;
     public DateTime CreatedAt { get; } = DateTime.UtcNow;
@@ -27,7 +27,7 @@ public class CreateArticleRequestHandler(ISessionStorage sessionStorage, IArticl
     public async Task<CreateArticleResponse> Handle(CreateArticleRequest request, CancellationToken cancellationToken)
     {
         var userId = sessionStorage.UserId;
-        var article = new Article(Guid.NewGuid(), request.Title, request.Content, userId);
+        var article = new Article(request.Title, request.Content, userId);
         await repository.Add(article);
         return new CreateArticleResponse(article.Id);
     }
