@@ -9,6 +9,7 @@ using System.Text;
 namespace Blogplace.Tests.Integration;
 
 [TestFixture]
+[Parallelizable(ParallelScope.All)]
 public abstract class TestBase
 {
     protected readonly WebApplicationFactory<Program> _factory = new();
