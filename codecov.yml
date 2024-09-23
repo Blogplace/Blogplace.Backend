@@ -15,9 +15,9 @@ coverage:
 
 flags:
   UnitTests:
-    carryforward: true
+    carryforward: false
   IntegrationTests:
-    carryforward: true
+    carryforward: false
 
 comment:
   layout: " diff, flags, files"
