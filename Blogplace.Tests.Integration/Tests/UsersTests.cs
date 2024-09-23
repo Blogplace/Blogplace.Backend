@@ -25,6 +25,26 @@ public class UsersTests : TestBase
         result!.User.Should().BeEquivalentTo(user);
     }
 
+    [Test]
+    public async Task Update_ShouldUpdateOwnUsername()
+    {
+        //Arrange
+        var newUsername = Guid.NewGuid().ToString();
+        var client = this.CreateClient(withSession: false);
+        var userClient = await this.RegisterNewUser(client);
+        var oldUser = await this.GetMe(userClient);
+
+        var request = new UpdateUserRequest(newUsername);
+
+        //Act
+        await userClient.PostAsync($"{this.urlBaseV1}/Users/Update", request);
+        var updatedUser = await this.GetMe(userClient);
+
+        //Assert
+        oldUser.Username.Should().NotBe(newUsername);
+        updatedUser.Username.Should().Be(newUsername);
+    }
+
     private async Task<ApiClient> RegisterNewUser(ApiClient baseClient)
     {
         var clearClient = baseClient.WithoutToken();
