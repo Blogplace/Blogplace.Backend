@@ -1,11 +1,7 @@
 ﻿using Blogplace.Web.Domain;
 using FluentAssertions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net;
 using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Blogplace.Tests.Integration.Tests;
 public class ArticlesTests : TestBase
@@ -182,38 +178,48 @@ public class ArticlesTests : TestBase
         article.Should().NotBeNull();
     }
 
-    [Test]
-    public async Task View_ShouldIncreaseCounter()
+    [TestCase(true, true, 3000, true)]
+    [TestCase(true, true, 500, false)]
+    [TestCase(true, false, 3000, false)]
+    [TestCase(false, true, 3000, false)]
+    public async Task View_ShouldIncreaseCounter_IfValid(bool sameUserAgent, bool sameArticleId, int delay, bool shouldIncrease)
     {
         //Arrange
         var client = this.CreateClient(withSession: true);
         var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
 
-        var headers = new Dictionary<string, string>()
+        var headersGetPost = new Dictionary<string, string>()
         {
             { "User-Agent", Guid.NewGuid().ToString() },
             { "Referer", $"https://localhost:3000/posts/{articleId}?custom=test" },
         };
 
+        var viewArticleId = sameArticleId ? articleId : Guid.NewGuid();
+        var headersViewPost = new Dictionary<string, string>()
+        {
+            { "User-Agent", sameUserAgent ? headersGetPost["User-Agent"] : Guid.NewGuid().ToString() },
+            { "Referer", $"https://localhost:3000/posts/{viewArticleId}?custom=test" },
+        };
+
         //Act
         var anonymousClient = client.WithoutToken();
         var getRequest = new GetArticleRequest(articleId);
-        var getResponse = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/Get", getRequest, customHeaders: headers);
+        var getResponse = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/Get", getRequest, customHeaders: headersGetPost);
         (await getResponse.Content.ReadFromJsonAsync<GetArticleResponse>())!
             .Deconstruct(out var oldArticle, out var viewId);
 
-        await Task.Delay(3000);
+        await Task.Delay(delay);
         var viewRequest = new ViewArticleRequest(viewId);
-        var viewResponse = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/View", viewRequest, customHeaders: headers);
-        viewResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        var viewResponse = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/View", viewRequest, customHeaders: headersViewPost);
+        viewResponse.StatusCode.Should().Be(shouldIncrease ? HttpStatusCode.OK : HttpStatusCode.Unauthorized);
 
-        var newGetResponse = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/Get", getRequest, customHeaders: headers);
+        var newGetResponse = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/Get", getRequest);
         (await newGetResponse.Content.ReadFromJsonAsync<GetArticleResponse>())!
             .Deconstruct(out var newArticle, out var _);
 
         //Assert
         oldArticle.Views.Should().Be(0);
-        newArticle.Views.Should().Be(1);
+        newArticle.Views.Should().Be(shouldIncrease ? 1 : 0);
     }
 
     private async Task<Guid> CreateArticle(ApiClient client, string title, string content)
