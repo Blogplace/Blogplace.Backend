@@ -26,8 +26,5 @@ public sealed class ArticlesController(IMediator mediator) : V1ControllerBase
 
     [AllowAnonymous]
     [HttpPost]
-    public async Task View(Guid viewId)
-    {
-        await mediator.Send(new ViewArticleRequest(this.HttpContext.Request.Headers["Referer"]!, viewId));
-    }
+    public Task View(ViewArticleRequest request) => mediator.Send(request);
 }
