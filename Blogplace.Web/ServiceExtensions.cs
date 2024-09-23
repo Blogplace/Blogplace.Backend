@@ -7,9 +7,7 @@ using Blogplace.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using System.Reflection;
 using System.Text;
 
 namespace Blogplace.Web;
@@ -130,6 +128,7 @@ public static class ServiceExtensions
     public static IServiceCollection SetupRepositories(this IServiceCollection services)
     {
         services.AddSingleton<IArticlesRepository, ArticlesRepository>();
+        services.AddSingleton<IUsersRepository, UsersRepository>();
 
         return services;
     }

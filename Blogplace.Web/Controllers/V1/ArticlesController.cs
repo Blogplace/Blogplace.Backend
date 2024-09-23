@@ -23,4 +23,8 @@ public sealed class ArticlesController(IMediator mediator) : V1ControllerBase
 
     [HttpPost]
     public Task Delete(DeleteArticleRequest request) => mediator.Send(request);
+
+    [AllowAnonymous]
+    [HttpPost]
+    public Task View(ViewArticleRequest request) => mediator.Send(request);
 }
