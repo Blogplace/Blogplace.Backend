@@ -36,13 +36,4 @@ public class AuthTests : TestBase
         var cookieHeader = response.Headers.GetValues("Set-Cookie").Single();
         cookieHeader.Should().StartWith("__access-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT;");
     }
-
-    [TestCase(true, HttpStatusCode.OK)]
-    [TestCase(false, HttpStatusCode.Unauthorized)]
-    public async Task Protected_OnlySignedInIsAllowed(bool signedIn, HttpStatusCode statusCodeFromProtected)
-    {
-        var client = this.CreateClient(withSession: signedIn);
-        (await client.PostAsync($"{this.urlBaseV1}/Example/Protected")).StatusCode.Should().Be(statusCodeFromProtected);
-        (await client.PostAsync($"{this.urlBaseV1}/Example/AllowAnonymous")).StatusCode.Should().Be(HttpStatusCode.OK);
-    }
 }

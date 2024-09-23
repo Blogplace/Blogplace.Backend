@@ -4,7 +4,8 @@ namespace Blogplace.Web.Exceptions;
 
 public class CustomExceptionHandler : IExceptionHandler
 {
-    public async ValueTask<bool> TryHandleAsync(
+    public async ValueTask<bool> 
+        TryHandleAsync(
         HttpContext context,
         Exception exception,
         CancellationToken cancellation)
