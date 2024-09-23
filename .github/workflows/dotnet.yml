@@ -26,8 +26,8 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore
-      - name: Test
-        run: dotnet test Blogplace.sln /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+      - name: Unit Tests
+        run: dotnet test Blogplace.Tests.Unit /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
       - name: Codecov Unit
         uses: codecov/codecov-action@v4
         with:
@@ -35,6 +35,8 @@ jobs:
           file: ./Blogplace.Tests.Unit/coverage.opencover.xml
           flags: UnitTests
           fail_ci_if_error: true
+      - name: Integration Tests
+        run: dotnet test Blogplace.Tests.Integration /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
       - name: Codecov Integration
         uses: codecov/codecov-action@v4
         with:
