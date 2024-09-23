@@ -11,7 +11,7 @@ public class AuthTests : TestBase
         var client = this.CreateClient(withSession: false);
 
         //Act
-        var response = await client.PostAsync($"{this.urlBaseV1}/Auth/Signin");
+        var response = await client.GetAsync($"{this.urlBaseV1}/Auth/Signin?email=test@example.com");
 
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
