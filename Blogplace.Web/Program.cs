@@ -1,7 +1,9 @@
 using Blogplace.Web;
+using Blogplace.Web.Auth;
 using Blogplace.Web.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Serilog;
+using static System.Net.Mime.MediaTypeNames;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -20,6 +22,7 @@ try
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+    builder.Services.AddMemoryCache();
 
     builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
@@ -49,6 +52,13 @@ try
     app.UseAuthorization();
 
     app.UseExceptionHandler(_ => { });
+
+    app.Use(async (ctx, next) => 
+    {
+        var sessionStorage = ctx.RequestServices.GetService<ISessionStorage>()!;
+        sessionStorage.SetupHttpContext(ctx);
+        await next();
+    });
 
     app.MapControllers();
     app.Run();
