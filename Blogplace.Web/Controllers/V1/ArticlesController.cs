@@ -23,4 +23,11 @@ public sealed class ArticlesController(IMediator mediator) : V1ControllerBase
 
     [HttpPost]
     public Task Delete(DeleteArticleRequest request) => mediator.Send(request);
+
+    [AllowAnonymous]
+    [HttpPost]
+    public async Task View(Guid viewId)
+    {
+        await mediator.Send(new ViewArticleRequest(this.HttpContext.Request.Headers["Referer"]!, viewId));
+    }
 }

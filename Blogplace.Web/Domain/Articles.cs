@@ -12,6 +12,7 @@ public class Article(Guid id, string title, string content, Guid authorId)
     public string Content { get; set; } = content;
     public DateTime CreatedAt { get; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public long Views { get; set; }
 
     public Guid AuthorId { get; } = authorId;
 }
@@ -32,7 +33,7 @@ public class CreateArticleRequestHandler(ISessionStorage sessionStorage, IArticl
     }
 }
 
-public record GetArticleResponse(ArticleDto Article);
+public record GetArticleResponse(ArticleDto Article, Guid VisitId);
 public record GetArticleRequest(Guid Id) : IRequest<GetArticleResponse>;
 public class GetArticleRequestHandler(IArticlesRepository repository) : IRequestHandler<GetArticleRequest, GetArticleResponse>
 {
@@ -40,7 +41,10 @@ public class GetArticleRequestHandler(IArticlesRepository repository) : IRequest
     {
         var result = await repository.Get(request.Id);
         var dto = new ArticleDto(result.Id, result.Title, result.Content, result.CreatedAt, result.UpdatedAt, result.AuthorId);
-        return new GetArticleResponse(dto);
+
+        var visitId = Guid.NewGuid();
+
+        return new GetArticleResponse(dto, visitId);
     }
 }
 
@@ -102,5 +106,13 @@ public class DeleteArticleRequestHandler(ISessionStorage sessionStorage, IArticl
         }
 
         await repository.Delete(request.Id);
+    }
+}
+
+public record ViewArticleRequest(Guid postId, Guid visitId) : IRequest;
+public class ViewArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository) : IRequestHandler<ViewArticleRequest>
+{
+    public async Task Handle(ViewArticleRequest request, CancellationToken cancellationToken)
+    {
     }
 }
