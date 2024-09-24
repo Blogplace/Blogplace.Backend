@@ -41,7 +41,7 @@ try
 
     app.UseExceptionHandler(_ => { });
 
-    app.Use(async (ctx, next) => 
+    app.Use(async (ctx, next) =>
     {
         var sessionStorage = ctx.RequestServices.GetService<ISessionStorage>()!;
         sessionStorage.SetupHttpContext(ctx);

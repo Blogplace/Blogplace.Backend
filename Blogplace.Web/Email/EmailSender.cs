@@ -1,11 +1,10 @@
 ﻿using Blogplace.Web.Commons.Logging;
 using Blogplace.Web.Configuration;
-using Blogplace.Web.Email;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
 
-namespace Blogplace.Web.Services;
+namespace Blogplace.Web.Email;
 
 public class EmailSender(IOptions<EmailOptions> options, IEventLogger logger) : IEmailSender
 {

@@ -1,4 +1,4 @@
-﻿using Blogplace.Web.Domain;
+﻿using Blogplace.Web.Domain.Articles;
 
 namespace Blogplace.Web.Infrastructure.Database;
 

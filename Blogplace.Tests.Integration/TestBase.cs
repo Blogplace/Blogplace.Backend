@@ -41,7 +41,7 @@ public abstract class TestBase
 
 public class ApiClient(HttpClient client, IAuthManager authManager, string? token = null)
 {
-    public async Task<HttpResponseMessage> PostAsync([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? value = null, Dictionary<string, string> customHeaders = null)
+    public async Task<HttpResponseMessage> PostAsync([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? value = null, Dictionary<string, string>? customHeaders = null)
     {
         var message = new HttpRequestMessage(HttpMethod.Post, url);
         if (value != null)
@@ -59,7 +59,7 @@ public class ApiClient(HttpClient client, IAuthManager authManager, string? toke
 
         if (customHeaders != null)
         {
-            foreach (var header in customHeaders) 
+            foreach (var header in customHeaders)
             {
                 message.Headers.Add(header.Key, header.Value);
             }

@@ -4,7 +4,6 @@ using Blogplace.Web.Commons.Logging;
 using Blogplace.Web.Configuration;
 using Blogplace.Web.Email;
 using Blogplace.Web.Infrastructure.Database;
-using Blogplace.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
