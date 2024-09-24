@@ -1,4 +1,4 @@
-﻿using Blogplace.Web.Domain;
+﻿using Blogplace.Web.Domain.Users;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
