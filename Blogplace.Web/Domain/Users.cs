@@ -1,17 +1,19 @@
 ﻿using Blogplace.Web.Auth;
+using Blogplace.Web.Commons;
 using Blogplace.Web.Infrastructure.Database;
 using MediatR;
 using System.Text.RegularExpressions;
 
 namespace Blogplace.Web.Domain;
 
-public class User(string email)
+public class User(string email, CommonPermissionsEnum permissions)
 {
     public Guid Id { get; } = Guid.NewGuid();
     public string Email { get; } = email;
     //Default username = part of email before last @ sign
     //testuser@example.com => testuser
     public string Username { get; set; } = Regex.Match(email, @"^(?<Name>.*)@[^@]+$").Groups["Name"].Value;
+    public CommonPermissionsEnum Permissions { get; set; } = permissions;
     public DateTime CreatedAt { get; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
@@ -77,13 +79,13 @@ public class UpdateUserRequestHandler(ISessionStorage sessionStorage, IUsersRepo
         var id = sessionStorage.UserId;
         var user = await repository.Get(id);
 
-        if(!string.IsNullOrWhiteSpace(request.NewUsername))
+        if (!string.IsNullOrWhiteSpace(request.NewUsername))
         {
             user.Username = request.NewUsername;
             isChanged = true;
         }
 
-        if(isChanged)
+        if (isChanged)
         {
             await repository.Update(user);
         }
