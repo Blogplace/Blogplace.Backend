@@ -1,9 +1,9 @@
 ﻿using Blogplace.Web.Auth;
+using Blogplace.Web.Commons.Logging;
 using Blogplace.Web.Exceptions;
 using Blogplace.Web.Infrastructure.Database;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 
 namespace Blogplace.Web.Domain;
@@ -25,13 +25,15 @@ public record ArticleSmallDto(Guid Id, string Title, long Views, DateTime Create
 
 public record CreateArticleResponse(Guid Id);
 public record CreateArticleRequest(string Title, string Content) : IRequest<CreateArticleResponse>;
-public class CreateArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository) : IRequestHandler<CreateArticleRequest, CreateArticleResponse>
+public class CreateArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository, IEventLogger logger) : IRequestHandler<CreateArticleRequest, CreateArticleResponse>
 {
     public async Task<CreateArticleResponse> Handle(CreateArticleRequest request, CancellationToken cancellationToken)
     {
         var userId = sessionStorage.UserId;
         var article = new Article(request.Title, request.Content, userId);
         await repository.Add(article);
+
+        logger.UserCreatedArticle(userId, article.Id);
         return new CreateArticleResponse(article.Id);
     }
 }
@@ -66,7 +68,7 @@ public class SearchArticlesRequestHandler(IArticlesRepository repository) : IReq
 }
 
 public record UpdateArticleRequest(Guid Id, string? NewTitle = null, string? NewContent = null) : IRequest;
-public class UpdateArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository) : IRequestHandler<UpdateArticleRequest>
+public class UpdateArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository, IEventLogger logger) : IRequestHandler<UpdateArticleRequest>
 {
     public async Task Handle(UpdateArticleRequest request, CancellationToken cancellationToken)
     {
@@ -94,12 +96,13 @@ public class UpdateArticleRequestHandler(ISessionStorage sessionStorage, IArticl
         if (isChanged)
         {
             await repository.Update(article);
+            logger.UserUpdatedArticle(sessionStorage.UserId, article.Id);
         }
     }
 }
 
 public record DeleteArticleRequest(Guid Id) : IRequest;
-public class DeleteArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository) : IRequestHandler<DeleteArticleRequest>
+public class DeleteArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository, IEventLogger logger) : IRequestHandler<DeleteArticleRequest>
 {
     public async Task Handle(DeleteArticleRequest request, CancellationToken cancellationToken)
     {
@@ -111,35 +114,38 @@ public class DeleteArticleRequestHandler(ISessionStorage sessionStorage, IArticl
         }
 
         await repository.Delete(request.Id);
+        logger.UserDeletedArticle(sessionStorage.UserId, article.Id);
     }
 }
 
 public record ArticleViewData(string Ip, DateTime DateTime, Guid PostId, string UserAgent);
 public record ViewArticleRequest(Guid ViewId) : IRequest;
-public class ViewArticleRequestHandler(IArticlesRepository repository, ISessionStorage sessionStorage, IMemoryCache cache) : IRequestHandler<ViewArticleRequest>
+public class ViewArticleRequestHandler(IArticlesRepository repository, ISessionStorage sessionStorage, IMemoryCache cache, IEventLogger logger) : IRequestHandler<ViewArticleRequest>
 {
     public async Task Handle(ViewArticleRequest request, CancellationToken cancellationToken)
     {
         var referer = sessionStorage.Referer!.Trim(" /".ToCharArray());
         var uri = new Uri(referer);
-        var postIdText = Regex.Match(uri.AbsolutePath, @"/(?<PostId>[^/]*)$").Groups["PostId"].Value;
-        var postId = Guid.Parse(postIdText);
+        var articleIdText = Regex.Match(uri.AbsolutePath, @"/(?<ArticleId>[^/]*)$").Groups["ArticleId"].Value;
+        var articleId = Guid.Parse(articleIdText);
 
         var key = $"ArticleView_{request.ViewId}";
         var cacheValue = cache.Get<ArticleViewData>($"ArticleView_{request.ViewId}")!;
 
         if (!CompareHttpContext(cacheValue, sessionStorage.Ip!, sessionStorage.UserAgent!)
             || !CompareDateTime(cacheValue)
-            || !ComparePostId(cacheValue, postId))
+            || !ComparePostId(cacheValue, articleId))
         {
             cache.Remove(key);
             throw new UserNotAuthorizedException(string.Empty);
         }
 
-        var post = await repository.Get(postId);
-        post.Views++;
-        await repository.Update(post);
+        var article = await repository.Get(articleId);
+        article.Views++;
+        await repository.Update(article);
         cache.Remove(key);
+
+        logger.UserViewedArticle(sessionStorage.UserId, articleId);
     }
 
     private static bool CompareHttpContext(ArticleViewData data, string ip, string userAgent) 
@@ -148,6 +154,6 @@ public class ViewArticleRequestHandler(IArticlesRepository repository, ISessionS
     private static bool CompareDateTime(ArticleViewData data)
         => data.DateTime <= DateTime.UtcNow.AddSeconds(-3);
 
-    private static bool ComparePostId(ArticleViewData data, Guid postId)
-        => data.PostId == postId;
+    private static bool ComparePostId(ArticleViewData data, Guid articleId)
+        => data.PostId == articleId;
 }
