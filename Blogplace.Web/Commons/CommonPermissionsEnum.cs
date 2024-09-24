@@ -3,10 +3,10 @@
 [Flags]
 public enum CommonPermissionsEnum : int
 {
-    PostCreate = 1 << 0,
-    PostRead = 1 << 1,
-    PostUpdate = 1 << 2,
-    PostDelete = 1 << 3,
+    ArticleCreate = 1 << 0,
+    ArticleRead = 1 << 1,
+    ArticleUpdate = 1 << 2,
+    ArticleDelete = 1 << 3,
 
     CommentCreate = 1 << 4,
     CommentRead = 1 << 5,
