@@ -25,11 +25,18 @@ public record ArticleSmallDto(Guid Id, string Title, long Views, DateTime Create
 
 public record CreateArticleResponse(Guid Id);
 public record CreateArticleRequest(string Title, string Content) : IRequest<CreateArticleResponse>;
-public class CreateArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository) : IRequestHandler<CreateArticleRequest, CreateArticleResponse>
+public class CreateArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository, IUsersRepository usersRepository, IPermissionsChecker permissionsChecker) : IRequestHandler<CreateArticleRequest, CreateArticleResponse>
 {
     public async Task<CreateArticleResponse> Handle(CreateArticleRequest request, CancellationToken cancellationToken)
     {
         var userId = sessionStorage.UserId;
+        var user = await usersRepository.Get(userId);
+
+        if (!permissionsChecker.CanCreateArticle(user.Permissions))
+        {
+            throw new UserNotAuthorizedException("No permissions");
+        }
+
         var article = new Article(request.Title, request.Content, userId);
         await repository.Add(article);
         return new CreateArticleResponse(article.Id);
@@ -142,7 +149,7 @@ public class ViewArticleRequestHandler(IArticlesRepository repository, ISessionS
         cache.Remove(key);
     }
 
-    private static bool CompareHttpContext(ArticleViewData data, string ip, string userAgent) 
+    private static bool CompareHttpContext(ArticleViewData data, string ip, string userAgent)
         => data.Ip == ip && data.UserAgent == userAgent;
 
     private static bool CompareDateTime(ArticleViewData data)
