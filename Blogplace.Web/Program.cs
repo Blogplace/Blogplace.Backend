@@ -1,6 +1,5 @@
 using Blogplace.Web;
 using Blogplace.Web.Auth;
-using Blogplace.Web.Commons.Logging;
 using Blogplace.Web.Exceptions;
 using Serilog;
 try

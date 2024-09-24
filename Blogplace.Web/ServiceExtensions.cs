@@ -25,7 +25,7 @@ public static class ServiceExtensions
 
         Log.Logger = logger;
         builder.Logging.AddSerilog(logger);
-
+        builder.Services.AddSingleton<Serilog.ILogger>(logger);
         builder.Services.AddSingleton<IEventLogger, EventLogger>();
 
         return builder;
