@@ -1,4 +1,5 @@
 ﻿using Blogplace.Web.Auth;
+using Blogplace.Web.Commons.Logging;
 using Blogplace.Web.Infrastructure.Database;
 using MediatR;
 using System.Text.RegularExpressions;
@@ -20,12 +21,13 @@ public record UserDto(Guid Id, string Username, DateTime CreatedAt);
 
 public record CreateUserResponse(Guid Id);
 public record CreateUserRequest(string Email) : IRequest<CreateUserResponse>;
-public class CreateUserRequestHandler(IUsersRepository repository) : IRequestHandler<CreateUserRequest, CreateUserResponse>
+public class CreateUserRequestHandler(IUsersRepository repository, IEventLogger logger) : IRequestHandler<CreateUserRequest, CreateUserResponse>
 {
     public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken cancellationToken)
     {
         var user = new User(request.Email);
         await repository.Add(user);
+        logger.UserCreated(user.Id);
         return new CreateUserResponse(user.Id);
     }
 }
@@ -68,7 +70,7 @@ public class GetUserMeRequestHandler(IUsersRepository repository, ISessionStorag
 }
 
 public record UpdateUserRequest(string? NewUsername) : IRequest;
-public class UpdateUserRequestHandler(ISessionStorage sessionStorage, IUsersRepository repository) : IRequestHandler<UpdateUserRequest>
+public class UpdateUserRequestHandler(ISessionStorage sessionStorage, IUsersRepository repository, IEventLogger logger) : IRequestHandler<UpdateUserRequest>
 {
     public async Task Handle(UpdateUserRequest request, CancellationToken cancellationToken)
     {
@@ -86,6 +88,7 @@ public class UpdateUserRequestHandler(ISessionStorage sessionStorage, IUsersRepo
         if(isChanged)
         {
             await repository.Update(user);
+            logger.UserUpdatedProfile(user.Id);
         }
     }
 }

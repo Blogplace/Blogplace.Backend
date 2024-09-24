@@ -1,33 +1,20 @@
 using Blogplace.Web;
 using Blogplace.Web.Auth;
+using Blogplace.Web.Commons.Logging;
 using Blogplace.Web.Exceptions;
-using Blogplace.Web.Services;
-using Microsoft.AspNetCore.Diagnostics;
 using Serilog;
-using static System.Net.Mime.MediaTypeNames;
-
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .CreateLogger();
-
 try
 {
-    Log.Information("Starting web application");
+    var builder = WebApplication.CreateBuilder(args).SetupSerilog();
 
-    var builder = WebApplication.CreateBuilder(args);
-    builder.Host.UseSerilog((context, loggerConfiguration) =>
-    {
-        loggerConfiguration.WriteTo.Console();
-        loggerConfiguration.ReadFrom.Configuration(context.Configuration);
-    });
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
     builder.Services.AddMemoryCache();
-
     builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
-    builder.Services
+    builder
+        .Services
         .SetupAuth(builder.Configuration)
         .SetupMediatr()
         .SetupRepositories()
