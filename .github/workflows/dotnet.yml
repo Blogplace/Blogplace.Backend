@@ -33,7 +33,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./Blogplace.Tests.Unit/coverage.opencover.xml
-          flags: UnitTests
+          flags: Unit
           fail_ci_if_error: true
       - name: Integration Tests
         run: dotnet test Blogplace.Tests.Integration /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
@@ -42,5 +42,5 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./Blogplace.Tests.Integration/coverage.opencover.xml
-          flags: IntegrationTests
+          flags: Integration
           fail_ci_if_error: true
