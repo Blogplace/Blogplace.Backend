@@ -1,7 +1,7 @@
 ﻿using Blogplace.Web.Auth;
 using Blogplace.Web.Commons.Consts;
 using Blogplace.Web.Commons.Logging;
-using Blogplace.Web.Domain;
+using Blogplace.Web.Domain.Users.Requests;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 namespace Blogplace.Web.Controllers.V1;
 
 public sealed class AuthController(
-    IOptions<CookieOptions> cookieOptions, IAuthManager authManager, IMediator mediator, IEventLogger logger) 
+    IOptions<CookieOptions> cookieOptions, IAuthManager authManager, IMediator mediator, IEventLogger logger)
     : V1ControllerBase
 {
     private readonly IAuthManager authManager = authManager;
@@ -20,7 +20,7 @@ public sealed class AuthController(
     [HttpGet]
     public async Task Signin(string email)//todo token
     {
-        var userId = (await mediator.Send(new GetUserByEmailRequest(email))).User?.Id 
+        var userId = (await mediator.Send(new GetUserByEmailRequest(email))).User?.Id
             ?? (await mediator.Send(new CreateUserRequest(email))).Id;
 
         var token = this.authManager.CreateToken(userId, AuthConsts.ROLE_WEB);

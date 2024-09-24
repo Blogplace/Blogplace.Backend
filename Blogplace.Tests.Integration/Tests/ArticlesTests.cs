@@ -1,4 +1,5 @@
 ﻿using Blogplace.Web.Domain.Articles;
+using Blogplace.Web.Domain.Articles.Requests;
 using FluentAssertions;
 using System.Net;
 using System.Net.Http.Json;

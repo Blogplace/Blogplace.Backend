@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Blogplace.Web.Domain;
+namespace Blogplace.Web.Domain.Users;
 
 public class User(string email)
 {
