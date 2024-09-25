@@ -18,8 +18,8 @@ internal class CustomExceptionHandlerTests
         var result = await handler.TryHandleAsync(context, customException, CancellationToken.None);
 
         // Assert
-        result.Should().BeTrue();
-        context.Response.StatusCode.Should().Be((int)customException.GetStatusCode());
+        _ = result.Should().BeTrue();
+        _ = context.Response.StatusCode.Should().Be((int)customException.GetStatusCode());
     }
 
     [Test]
@@ -34,7 +34,7 @@ internal class CustomExceptionHandlerTests
         var result = await handler.TryHandleAsync(context, randomException, CancellationToken.None);
 
         // Assert
-        result.Should().BeFalse();
+        _ = result.Should().BeFalse();
     }
 
     private class TestCustomException : CustomException

@@ -1,4 +1,5 @@
-﻿using Blogplace.Web.Domain;
+﻿using Blogplace.Web.Domain.Users;
+using Blogplace.Web.Domain.Users.Requests;
 using FluentAssertions;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;

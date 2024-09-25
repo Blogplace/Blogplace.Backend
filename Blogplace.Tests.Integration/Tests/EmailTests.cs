@@ -1,16 +1,13 @@
 ﻿using Blogplace.Web.Configuration;
 using Blogplace.Web.Email;
-using Blogplace.Web.Services;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using FluentAssertions;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Json;
 
 namespace Blogplace.Tests.Integration.Tests;
 public class EmailTests : TestBase
@@ -32,11 +29,7 @@ public class EmailTests : TestBase
     {
         this.mailpitContainer.StartAsync().Wait();
 
-        var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureTestServices(services =>
-            {
-                services.Configure<EmailOptions>(o =>
+        var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder => builder.ConfigureTestServices(services => services.Configure<EmailOptions>(o =>
                 {
                     o.Host = "localhost";
                     o.Port = this.mailpitContainer.GetMappedPublicPort(1025);
@@ -44,9 +37,7 @@ public class EmailTests : TestBase
                     o.Password = "";
                     o.SenderEmail = "test@blogplace";
                     o.EnableSsl = false;
-                });
-            });
-        });
+                })));
         this.emailService = factory.Services.GetService<IEmailSender>()!;
 
         this.mailpitApiHost = this.mailpitContainer.Hostname;
@@ -62,10 +53,7 @@ public class EmailTests : TestBase
     }
 
     [OneTimeTearDown]
-    public void TearDown()
-    {
-        this.mailpitContainer.StopAsync();
-    }
+    public void TearDown() => this.mailpitContainer.StopAsync();
 
     [Test]
     public async Task Send_SuccessfullySent()

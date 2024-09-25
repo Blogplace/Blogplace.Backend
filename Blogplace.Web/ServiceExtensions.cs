@@ -1,19 +1,35 @@
 using Blogplace.Web.Auth;
 using Blogplace.Web.Commons.Consts;
+using Blogplace.Web.Commons.Logging;
 using Blogplace.Web.Configuration;
 using Blogplace.Web.Email;
 using Blogplace.Web.Infrastructure.Database;
-using Blogplace.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Text;
 
 namespace Blogplace.Web;
 
 public static class ServiceExtensions
 {
+    public static WebApplicationBuilder SetupSerilog(this WebApplicationBuilder builder)
+    {
+        builder.Logging.ClearProviders();
+        var logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration)
+            .CreateLogger();
+
+        Log.Logger = logger;
+        builder.Logging.AddSerilog(logger);
+        builder.Services.AddSingleton<Serilog.ILogger>(logger);
+        builder.Services.AddSingleton<IEventLogger, EventLogger>();
+
+        return builder;
+    }
+
     public static IServiceCollection SetupAuth(this IServiceCollection services, ConfigurationManager config)
     {
         services.AddOptions<PermissionsOptions>().Bind(config.GetSection("Permissions")).ValidateDataAnnotations();

@@ -1,16 +1,16 @@
-﻿using Blogplace.Web.Configuration;
-using Blogplace.Web.Email;
+﻿using Blogplace.Web.Commons.Logging;
+using Blogplace.Web.Configuration;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
 
-namespace Blogplace.Web.Services;
+namespace Blogplace.Web.Email;
 
-public class EmailSender(IOptions<EmailOptions> options) : IEmailSender
+public class EmailSender(IOptions<EmailOptions> options, IEventLogger logger) : IEmailSender
 {
     private readonly EmailOptions options = options.Value;
 
-    public Task SendEmailAsync(string email, string subject, string message)
+    public async Task SendEmailAsync(string email, string subject, string message)
     {
         var client = new SmtpClient()
         {
@@ -20,12 +20,14 @@ public class EmailSender(IOptions<EmailOptions> options) : IEmailSender
             Credentials = new NetworkCredential(this.options.User, this.options.Password)
         };
 
-        return client.SendMailAsync(
+        await client.SendMailAsync(
             new MailMessage(
                from: this.options.SenderEmail,
                to: email,
                subject,
                message
                ));
+
+        logger.EmailSent(email, subject);
     }
 }
