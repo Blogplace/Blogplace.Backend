@@ -81,6 +81,17 @@ csharp_style_var_elsewhere = true:warning
 csharp_style_var_for_built_in_types = true:silent
 csharp_style_var_when_type_is_apparent = true:warning
 
+# Constants should be named using PascalCase
+dotnet_naming_rule.constant_fields_should_be_upper_case.severity = suggestion
+dotnet_naming_rule.constant_fields_should_be_upper_case.symbols = constant_fields
+dotnet_naming_rule.constant_fields_should_be_upper_case.style = upper_case_style
+
+dotnet_naming_symbols.constant_fields.applicable_kinds = field
+dotnet_naming_symbols.constant_fields.applicable_accessibilities = public,protected,private
+dotnet_naming_symbols.constant_fields.required_modifiers = const
+
+dotnet_naming_style.upper_case_style.capitalization = all_upper
+
 # Expression-bodied members
 csharp_style_expression_bodied_accessors = true:suggestion
 csharp_style_expression_bodied_constructors = when_on_single_line:suggestion
