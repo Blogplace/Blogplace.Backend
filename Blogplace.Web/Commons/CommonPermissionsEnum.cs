@@ -3,6 +3,8 @@
 [Flags]
 public enum CommonPermissionsEnum : int
 {
+    None = 0,
+    
     ArticleCreate = 1 << 0,
     ArticleRead = 1 << 1,
     ArticleUpdate = 1 << 2,
@@ -16,5 +18,7 @@ public enum CommonPermissionsEnum : int
     ProfileCreate = 1 << 8,
     ProfileRead = 1 << 9,
     ProfileUpdate = 1 << 10,
-    ProfileDelete = 1 << 11
+    ProfileDelete = 1 << 11,
+    
+    All = Int32.MaxValue
 }

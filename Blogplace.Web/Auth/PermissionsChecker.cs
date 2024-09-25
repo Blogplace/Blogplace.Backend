@@ -9,8 +9,6 @@ public interface IPermissionsChecker
 
 public class PermissionsChecker : IPermissionsChecker
 {
-    public bool CanCreateArticle(CommonPermissionsEnum permissions)
-    {
-        return true;
-    }
+    public bool CanCreateArticle(CommonPermissionsEnum permissions) => 
+        permissions.HasFlag(CommonPermissionsEnum.ArticleCreate);
 }

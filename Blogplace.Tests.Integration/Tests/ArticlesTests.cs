@@ -1,6 +1,8 @@
-﻿using Blogplace.Web.Domain.Articles;
+﻿using Blogplace.Web.Commons;
+using Blogplace.Web.Domain.Articles;
 using Blogplace.Web.Domain.Articles.Requests;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -8,7 +10,7 @@ namespace Blogplace.Tests.Integration.Tests;
 public class ArticlesTests : TestBase
 {
     [Test]
-    public async Task Create_UnauthorizedReturnsUnauthorized()
+    public async Task Create_AnonymousReturnsUnauthorized()
     {
         //Arrange
         var client = this.CreateClient(withSession: false);
@@ -25,14 +27,14 @@ public class ArticlesTests : TestBase
     public async Task Create_ArticleShouldBeCreated()
     {
         //Arrange
-        var client = this.CreateClient(withSession: true);
+        var client = this.CreateClient(withSession: true, permissions: CommonPermissionsEnum.ArticleCreate);
         var createRequest = new CreateArticleRequest("TEST_TITLE", "TEST_CONTENT");
 
         //Act
         var createResponse = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", createRequest);
 
         //Assert
-        createResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var articleId = (await createResponse.Content.ReadFromJsonAsync<CreateArticleResponse>())!.Id;
 
         var result = await this.GetArticleById(client, articleId, anonymous: true);
@@ -44,12 +46,30 @@ public class ArticlesTests : TestBase
         result.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
     }
+    
+    // TODO: Add more of these tests to all CRUD operations.
+    [Test]
+    public async Task Create_ArticleShouldNotBeCreatedWithoutPermission()
+    {
+        //Arrange
+        var client = this.CreateClient(withSession: true, permissions: CommonPermissionsEnum.None);
+        var createRequest = new CreateArticleRequest("TEST_TITLE", "TEST_CONTENT");
+
+        //Act
+        var createResponse = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", createRequest);
+
+        //Assert
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
 
     [Test]
     public async Task Search_ShouldReturnListOfArticles()
     {
         //Arrange
-        var client = this.CreateClient(withSession: true);
+        var client = this.CreateClient(
+            withSession: true,
+            permissions: CommonPermissionsEnum.ArticleCreate | CommonPermissionsEnum.ArticleRead
+            );
         var article1 = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
         var article2 = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
         var article3 = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
@@ -68,7 +88,7 @@ public class ArticlesTests : TestBase
     }
 
     [Test]
-    public async Task Update_UnauthorizedReturnsUnauthorized()
+    public async Task Update_AnonymousReturnsUnauthorized()
     {
         //Arrange
         var client = this.CreateClient(withSession: false);
@@ -85,7 +105,10 @@ public class ArticlesTests : TestBase
     public async Task Update_ArticleShouldBeUpdated()
     {
         //Arrange
-        var client = this.CreateClient(withSession: true);
+        var client = this.CreateClient(
+            withSession: true,
+            permissions: CommonPermissionsEnum.ArticleCreate | CommonPermissionsEnum.ArticleUpdate
+            );
         var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
 
         var updateRequest = new UpdateArticleRequest(articleId, "NEW_TITLE", "NEW_CONTENT");
@@ -110,7 +133,10 @@ public class ArticlesTests : TestBase
     public async Task Update_ArticleShouldNotBeUpdatedByOtherUser()
     {
         //Arrange
-        var client = this.CreateClient(withSession: true);
+        var client = this.CreateClient(
+            withSession: true,
+            permissions: CommonPermissionsEnum.ArticleCreate | CommonPermissionsEnum.ArticleUpdate
+            );
         var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
 
         var otherClient = client.WithDifferentToken();
@@ -129,7 +155,7 @@ public class ArticlesTests : TestBase
     }
 
     [Test]
-    public async Task Delete_UnauthorizedReturnsUnauthorized()
+    public async Task Delete_AnonymousReturnsUnauthorized()
     {
         //Arrange
         var client = this.CreateClient(withSession: false);
@@ -146,7 +172,10 @@ public class ArticlesTests : TestBase
     public async Task Delete_ShouldDelete()
     {
         //Arrange
-        var client = this.CreateClient(withSession: true);
+        var client = this.CreateClient(
+            withSession: true,
+            permissions: CommonPermissionsEnum.ArticleCreate | CommonPermissionsEnum.ArticleDelete
+            );
         var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
         var request = new DeleteArticleRequest(articleId);
 
@@ -163,7 +192,10 @@ public class ArticlesTests : TestBase
     public async Task Delete_ShouldNotBeDeletedByOtherUser()
     {
         //Arrange
-        var client = this.CreateClient(withSession: true);
+        var client = this.CreateClient(
+            withSession: true,
+            permissions: CommonPermissionsEnum.ArticleCreate | CommonPermissionsEnum.ArticleDelete
+            );
         var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
 
         var otherClient = client.WithDifferentToken();
@@ -186,7 +218,10 @@ public class ArticlesTests : TestBase
     public async Task View_ShouldIncreaseCounter_IfValid(bool sameUserAgent, bool sameArticleId, int delay, bool shouldIncrease)
     {
         //Arrange
-        var client = this.CreateClient(withSession: true);
+        var client = this.CreateClient(
+            withSession: true,
+            permissions: CommonPermissionsEnum.ArticleCreate | CommonPermissionsEnum.ArticleRead
+            );
         var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
 
         var headersGetPost = new Dictionary<string, string>()

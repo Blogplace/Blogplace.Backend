@@ -9,7 +9,11 @@ namespace Blogplace.Web.Domain.Users.Requests;
 
 public record CreateUserResponse(Guid Id);
 public record CreateUserRequest(string Email) : IRequest<CreateUserResponse>;
-public class CreateUserRequestHandler(IUsersRepository repository, IEventLogger logger, IOptions<PermissionsOptions> permissionsOptions) : IRequestHandler<CreateUserRequest, CreateUserResponse>
+public class CreateUserRequestHandler(
+    IUsersRepository repository,
+    IEventLogger logger,
+    IOptions<PermissionsOptions> permissionsOptions
+    ) : IRequestHandler<CreateUserRequest, CreateUserResponse>
 {
     public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken cancellationToken)
     {
