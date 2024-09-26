@@ -9,13 +9,13 @@ namespace Blogplace.Tests.Integration;
 public static class TestApiClientExtensions
 {
     public static ApiClient CreateClient_Standard(this WebApplicationFactory<Program> factory) 
-        => factory.CreateClient_CustomUserId(UsersRepositoryFake.Standard.Id);
+        => factory.CreateClient_CustomUserId(UsersRepositoryFake.Standard!.Id);
 
     public static ApiClient CreateClient_AnotherStandard(this WebApplicationFactory<Program> factory)
-        => factory.CreateClient_CustomUserId(UsersRepositoryFake.AnotherStandard.Id);
+        => factory.CreateClient_CustomUserId(UsersRepositoryFake.AnotherStandard!.Id);
 
     public static ApiClient CreateClient_NonePermissions(this WebApplicationFactory<Program> factory)
-        => factory.CreateClient_CustomUserId(UsersRepositoryFake.NonePermissions.Id);
+        => factory.CreateClient_CustomUserId(UsersRepositoryFake.NonePermissions!.Id);
 
     public static ApiClient CreateClient_CustomUserId(this WebApplicationFactory<Program> factory, Guid userId)
     {

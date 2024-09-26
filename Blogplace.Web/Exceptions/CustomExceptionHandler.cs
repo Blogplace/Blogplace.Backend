@@ -4,7 +4,7 @@ namespace Blogplace.Web.Exceptions;
 
 public class CustomExceptionHandler : IExceptionHandler
 {
-    public async ValueTask<bool> TryHandleAsync(
+    public ValueTask<bool> TryHandleAsync(
         HttpContext context,
         Exception exception,
         CancellationToken cancellation)
@@ -12,9 +12,9 @@ public class CustomExceptionHandler : IExceptionHandler
         if (exception is CustomException customException)
         {
             context.Response.StatusCode = (int)customException.GetStatusCode();
-            return true;
+            return new ValueTask<bool>(true);
         }
 
-        return false;
+        return new ValueTask<bool>(false);
     }
 }

@@ -34,7 +34,6 @@ public class EmailTests : TestBase
                 o.SenderEmail = "test@blogplace";
                 o.EnableSsl = false;
             }));
-
     }
 
     [OneTimeTearDown]

@@ -13,7 +13,7 @@ namespace Blogplace.Tests.Integration;
 [Parallelizable(ParallelScope.Fixtures)]
 public abstract class TestBase
 {
-    protected Guid StandardUserId { get; } = UsersRepositoryFake.Standard.Id;
+    protected static Guid StandardUserId => UsersRepositoryFake.Standard?.Id ?? Guid.Empty;
     protected string urlBaseV1 = "/public/api/v1.0";
     
     protected static WebApplicationFactory<Program> StartServer(Action<IServiceCollection>? registerServices = null)
@@ -21,12 +21,20 @@ public abstract class TestBase
         var factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder => builder.ConfigureServices(x => 
             {
-                x.AddSingleton<IUsersRepository>(new UsersRepositoryFake());
-                x.AddSingleton<IArticlesRepository>(new ArticlesRepositoryFake());
+                x.AddSingleton<IUsersRepository, UsersRepositoryFake>();
+                x.AddSingleton<IArticlesRepository, ArticlesRepositoryFake>();
                 registerServices?.Invoke(x); 
             }));
 
+        InitializeRepositories(factory.Services);
+
         return factory;
+    }
+
+    private static void InitializeRepositories(IServiceProvider services)
+    {
+        services.GetService<IUsersRepository>();
+        services.GetService<IArticlesRepository>();
     }
 }
 
