@@ -1,5 +1,4 @@
-﻿using Blogplace.Web.Commons;
-using Blogplace.Web.Domain.Articles;
+﻿using Blogplace.Web.Domain.Articles;
 using Blogplace.Web.Domain.Articles.Requests;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -11,11 +10,11 @@ public class ArticlesTests : TestBase
 {
     private WebApplicationFactory<Program> _factory;
 
-    [OneTimeSetUp]
-    public void OneTimeSetUp() => this._factory = StartServer();
+    [SetUp]
+    public void SetUp() => this._factory = StartServer();
 
-    [OneTimeTearDown]
-    public void OneTimeTearDown() => this._factory?.Dispose();
+    [TearDown]
+    public void TearDown() => this._factory?.Dispose();
 
     [Test]
     public async Task Create_AnonymousReturnsUnauthorized()
@@ -28,7 +27,7 @@ public class ArticlesTests : TestBase
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", request);
 
         //Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Test]
@@ -103,7 +102,7 @@ public class ArticlesTests : TestBase
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Update", request);
 
         //Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Test]
@@ -119,7 +118,7 @@ public class ArticlesTests : TestBase
         var updateResponse = await client.PostAsync($"{this.urlBaseV1}/Articles/Update", updateRequest);
 
         //Assert
-        updateResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await this.GetArticleById(client, articleId, anonymous: true);
 
         result.Id.Should().Be(articleId);
@@ -146,7 +145,7 @@ public class ArticlesTests : TestBase
         var updateResponse = await otherClient.PostAsync($"{this.urlBaseV1}/Articles/Update", updateRequest);
 
         //Assert
-        updateResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         var article = await this.GetArticleById(client, articleId, anonymous: true);
 
         article.Title.Should().NotBe("NEW_TITLE");
@@ -164,7 +163,7 @@ public class ArticlesTests : TestBase
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Delete", request);
 
         //Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Test]
@@ -179,7 +178,7 @@ public class ArticlesTests : TestBase
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Delete", request);
 
         //Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         //todo get should return 404 Not Found
     }
@@ -199,7 +198,7 @@ public class ArticlesTests : TestBase
         var response = await otherClient.PostAsync($"{this.urlBaseV1}/Articles/Delete", request);
 
         //Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         var article = await this.GetArticleById(client, articleId, anonymous: true);
         article.Should().NotBeNull();
     }
@@ -252,7 +251,7 @@ public class ArticlesTests : TestBase
     {
         var request = new CreateArticleRequest(title, content);
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", request);
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         var articleId = (await response.Content.ReadFromJsonAsync<CreateArticleResponse>())!.Id;
         return articleId;
     }
@@ -262,7 +261,7 @@ public class ArticlesTests : TestBase
         var currentClient = anonymous ? this._factory.CreateClient_Anonymous() : client;
         var getRequest = new GetArticleRequest(articleId);
         var getResponse = await currentClient.PostAsync($"{this.urlBaseV1}/Articles/Get", getRequest);
-        getResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = (await getResponse.Content.ReadFromJsonAsync<GetArticleResponse>())!.Article;
         return result;

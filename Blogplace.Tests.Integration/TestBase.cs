@@ -10,7 +10,7 @@ using System.Text;
 namespace Blogplace.Tests.Integration;
 
 [TestFixture]
-[Parallelizable(ParallelScope.All)]
+[Parallelizable(ParallelScope.Fixtures)]
 public abstract class TestBase
 {
     protected Guid StandardUserId { get; } = UsersRepositoryFake.Standard.Id;

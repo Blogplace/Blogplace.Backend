@@ -9,11 +9,11 @@ public class UsersTests : TestBase
 {
     private WebApplicationFactory<Program> _factory;
 
-    [OneTimeSetUp]
-    public void OneTimeSetUp() => this._factory = StartServer();
+    [SetUp]
+    public void SetUp() => this._factory = StartServer();
 
-    [OneTimeTearDown]
-    public void OneTimeTearDown() => this._factory?.Dispose();
+    [TearDown]
+    public void TearDown() => this._factory?.Dispose();
 
     [Test]
     public async Task GetById_ShouldBePublic()
