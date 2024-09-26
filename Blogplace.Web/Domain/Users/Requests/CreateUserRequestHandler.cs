@@ -1,16 +1,24 @@
-﻿using Blogplace.Web.Commons.Logging;
+﻿using Blogplace.Web.Commons;
+using Blogplace.Web.Commons.Logging;
+using Blogplace.Web.Configuration;
 using Blogplace.Web.Infrastructure.Database;
 using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace Blogplace.Web.Domain.Users.Requests;
 
 public record CreateUserResponse(Guid Id);
 public record CreateUserRequest(string Email) : IRequest<CreateUserResponse>;
-public class CreateUserRequestHandler(IUsersRepository repository, IEventLogger logger) : IRequestHandler<CreateUserRequest, CreateUserResponse>
+public class CreateUserRequestHandler(
+    IUsersRepository repository,
+    IEventLogger logger,
+    IOptions<PermissionsOptions> permissionsOptions
+    ) : IRequestHandler<CreateUserRequest, CreateUserResponse>
 {
     public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken cancellationToken)
     {
-        var user = new User(request.Email);
+        var defaultPermissions = (CommonPermissionsEnum)permissionsOptions.Value.DefaultPermissions.Select(x => (int)x).Sum();
+        var user = new User(request.Email, defaultPermissions);
         await repository.Add(user);
         logger.UserCreated(user.Id);
         return new CreateUserResponse(user.Id);

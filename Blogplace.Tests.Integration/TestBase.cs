@@ -1,5 +1,9 @@
 ﻿using Blogplace.Web.Auth;
+using Blogplace.Web.Commons;
 using Blogplace.Web.Commons.Consts;
+using Blogplace.Web.Domain.Users;
+using Blogplace.Web.Infrastructure.Database;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -16,21 +20,34 @@ public abstract class TestBase
     protected Guid currentUserId = Guid.NewGuid();
     protected string urlBaseV1 = "/public/api/v1.0";
 
-    protected ApiClient CreateClient(Action<IServiceCollection>? registerServices = null, bool withSession = true, Guid? customUserId = null/*, bool mobileSession = false, bool withSession = true, string? customToken = null*/)
+    protected ApiClient CreateClient(
+        Action<IServiceCollection>? registerServices = null,
+        bool withSession = true,
+        Guid? customUserId = null,
+        CommonPermissionsEnum? permissions = null,
+        string email = "test@email.com"
+        /*, bool mobileSession = false,
+         * bool withSession = true,
+         * string? customToken = null*/
+        )
     {
-        var client = this._factory
-            .WithWebHostBuilder(builder => builder.ConfigureServices(x => registerServices?.Invoke(x)))
-            .CreateDefaultClient();
+        var builder = this._factory
+            .WithWebHostBuilder(builder => builder.ConfigureServices(x => registerServices?.Invoke(x)));
+        var client = builder.CreateDefaultClient();
 
         //if (customToken != null)
         //{
         //    return new(client, customToken);
         //}
+        var userId = customUserId ?? this.currentUserId;
+
+        var userRepository = builder.Services.GetService<IUsersRepository>()!;
+        var user = new User(email, permissions ?? CommonPermissionsEnum.None, userId);
+        userRepository.Add(user).Wait();
 
         var authManager = this._factory.Services.GetService<IAuthManager>()!;
         if (withSession)
         {
-            var userId = customUserId ?? this.currentUserId;
             var token = authManager.CreateToken(userId, AuthConsts.ROLE_WEB).AccessToken;
             return new(client, authManager, token);
         }

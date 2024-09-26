@@ -32,6 +32,10 @@ public static class ServiceExtensions
 
     public static IServiceCollection SetupAuth(this IServiceCollection services, ConfigurationManager config)
     {
+        services.AddOptions<PermissionsOptions>().Bind(config.GetSection("Permissions")).ValidateDataAnnotations();
+
+        services.AddSingleton<IPermissionsChecker, PermissionsChecker>();
+
         services.AddOptions<AuthOptions>().Bind(config.GetSection("Auth")).ValidateDataAnnotations();
         services.AddOptions<CookieOptions>().Bind(config.GetSection("Auth:Cookie")).ValidateDataAnnotations();
 
