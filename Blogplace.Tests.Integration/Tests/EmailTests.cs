@@ -4,7 +4,6 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -12,61 +11,72 @@ using System.Net.Http.Json;
 namespace Blogplace.Tests.Integration.Tests;
 public class EmailTests : TestBase
 {
-    private IEmailSender emailService;
-    private readonly IContainer mailpitContainer = new ContainerBuilder()
-        .WithImage("axllent/mailpit")
-        .WithPortBinding(1025, true)
-        .WithPortBinding(8025, true)
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(r => r.ForPort(8025)))
-        .Build();
-
-    private string mailpitApiHost;
-    private int mailpitApiPort;
-    private HttpClient mailpitApiClient;
+    private IContainer mailpitContainer;
+    private WebApplicationFactory<Program> _factory;
 
     [OneTimeSetUp]
-    public void SetUp()
+    public async Task OneTimeSetUp()
     {
-        this.mailpitContainer.StartAsync().Wait();
+        this.mailpitContainer = new ContainerBuilder()
+            .WithImage("axllent/mailpit")
+            .WithPortBinding(1025, true)
+            .WithPortBinding(8025, true)
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(r => r.ForPort(8025)))
+            .Build();
+        await this.mailpitContainer.StartAsync();
 
-        var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder => builder.ConfigureTestServices(services => services.Configure<EmailOptions>(o =>
-                {
-                    o.Host = "localhost";
-                    o.Port = this.mailpitContainer.GetMappedPublicPort(1025);
-                    o.User = "test@blogplace";
-                    o.Password = "";
-                    o.SenderEmail = "test@blogplace";
-                    o.EnableSsl = false;
-                })));
-        this.emailService = factory.Services.GetService<IEmailSender>()!;
+        this._factory = StartServer(x => x.Configure<EmailOptions>(o =>
+            {
+                o.Host = "localhost";
+                o.Port = this.mailpitContainer.GetMappedPublicPort(1025);
+                o.User = "test@blogplace";
+                o.Password = "";
+                o.SenderEmail = "test@blogplace";
+                o.EnableSsl = false;
+            }));
 
-        this.mailpitApiHost = this.mailpitContainer.Hostname;
-        this.mailpitApiPort = this.mailpitContainer.GetMappedPublicPort(8025);
-
-        this.mailpitApiClient = new HttpClient
-        {
-            BaseAddress = new UriBuilder(Uri.UriSchemeHttp, this.mailpitApiHost, this.mailpitApiPort, "/api/v1/").Uri
-        };
-        this.mailpitApiClient.DefaultRequestHeaders.Accept.Clear();
-        this.mailpitApiClient.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
     [OneTimeTearDown]
-    public void TearDown() => this.mailpitContainer.StopAsync();
+    public async Task OneTimeTearDown()
+    {
+        this._factory?.Dispose();
+        if (this.mailpitContainer != null)
+        {
+            await this.mailpitContainer.StopAsync();
+        }
+    }
 
     [Test]
     public async Task Send_SuccessfullySent()
     {
+        //Arrange
+        var emailService = this._factory.Services.GetService<IEmailSender>()!;
+        var client = this.CreateMailpitClient();
         var subject = "subject_" + Guid.NewGuid();
         var content = "content_" + Guid.NewGuid();
-        await this.emailService.SendEmailAsync("test-receiver@host", subject, content);
 
-        var response = await this.mailpitApiClient.GetFromJsonAsync<MessageSearchResponse>($"search?query=subject:\"{subject}\"");
+        //Act
+        await emailService.SendEmailAsync("test-receiver@host", subject, content);
+        var response = await client.GetFromJsonAsync<MessageSearchResponse>($"search?query=subject:\"{subject}\"");
+
+        //Assert
         response.Should().NotBeNull();
+        response?.Messages.Should().ContainSingle().Which.Subject.Should().Be(subject);
+    }
 
-        var messages = response?.Messages;
-        messages.Should().ContainSingle().Which.Subject.Should().Be(subject);
+    private HttpClient CreateMailpitClient()
+    {
+        var mailpitApiHost = this.mailpitContainer.Hostname;
+        var mailpitApiPort = this.mailpitContainer.GetMappedPublicPort(8025);
+        var mailpitApiClient = new HttpClient
+        {
+            BaseAddress = new UriBuilder(Uri.UriSchemeHttp, mailpitApiHost, mailpitApiPort, "/api/v1/").Uri
+        };
+        mailpitApiClient.DefaultRequestHeaders.Accept.Clear();
+        mailpitApiClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        return mailpitApiClient;
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
