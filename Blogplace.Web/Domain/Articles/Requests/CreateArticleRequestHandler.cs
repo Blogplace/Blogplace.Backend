@@ -8,7 +8,14 @@ namespace Blogplace.Web.Domain.Articles.Requests;
 
 public record CreateArticleResponse(Guid Id);
 public record CreateArticleRequest(string Title, string Content) : IRequest<CreateArticleResponse>;
-public class CreateArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository, IUsersRepository usersRepository, IPermissionsChecker permissionsChecker, IEventLogger logger) : IRequestHandler<CreateArticleRequest, CreateArticleResponse>
+
+public class CreateArticleRequestHandler(
+    ISessionStorage sessionStorage,
+    IArticlesRepository repository,
+    IUsersRepository usersRepository,
+    IPermissionsChecker permissionsChecker,
+    IEventLogger logger
+) : IRequestHandler<CreateArticleRequest, CreateArticleResponse>
 {
     public async Task<CreateArticleResponse> Handle(CreateArticleRequest request, CancellationToken cancellationToken)
     {
