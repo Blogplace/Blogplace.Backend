@@ -15,12 +15,17 @@ public class UsersRepositoryFake : IUsersRepository
 
     public List<User> Users { get; private set; }
 
+    private static readonly object obj = new ();
+
     public UsersRepositoryFake(IOptions<PermissionsOptions> permissionOptions)
     {
         var defaultPermissions = permissionOptions.Value.GetDefault();
-        Standard = new User($"{nameof(Standard).ToLower()}@blogplace.com", defaultPermissions);
-        AnotherStandard = new User($"{nameof(AnotherStandard).ToLower()}@blogplace.com", defaultPermissions);
-        NonePermissions = new User($"{nameof(NonePermissions).ToLower()}@blogplace.com", Web.Commons.CommonPermissionsEnum.None);
+        lock(obj) 
+        {
+            Standard ??= new User($"{nameof(Standard).ToLower()}@blogplace.com", defaultPermissions);
+            AnotherStandard ??= new User($"{nameof(AnotherStandard).ToLower()}@blogplace.com", defaultPermissions);
+            NonePermissions ??= new User($"{nameof(NonePermissions).ToLower()}@blogplace.com", Web.Commons.CommonPermissionsEnum.None);
+        }
 
         this.Users =
         [
