@@ -1,4 +1,5 @@
 ﻿using Blogplace.Web.Domain.Users;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Blogplace.Web.Infrastructure.Database;
 
@@ -10,6 +11,7 @@ public interface IUsersRepository
     Task Update(User user);
 }
 
+[ExcludeFromCodeCoverage]
 public class UsersRepository : IUsersRepository
 {
     private readonly List<User> _users = [];

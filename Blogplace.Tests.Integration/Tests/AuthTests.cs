@@ -1,14 +1,23 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 
 namespace Blogplace.Tests.Integration.Tests;
 public class AuthTests : TestBase
 {
+    private WebApplicationFactory<Program> _factory;
+
+    [SetUp]
+    public void SetUp() => this._factory = StartServer();
+
+    [TearDown]
+    public void TearDown() => this._factory?.Dispose();
+
     [Test]
     public async Task Signin_ShouldAddCookie()
     {
         //Arrange
-        var client = this.CreateClient(withSession: false);
+        var client = this._factory.CreateClient_Anonymous();
 
         //Act
         var response = await client.GetAsync($"{this.urlBaseV1}/Auth/Signin?email=test@example.com");
@@ -26,7 +35,7 @@ public class AuthTests : TestBase
     public async Task Signout_ShouldRemoveCookie()
     {
         //Arrange
-        var client = this.CreateClient(withSession: true); //signed in
+        var client = this._factory.CreateClient_Standard(); //signed in
 
         //Act
         var response = await client.PostAsync($"{this.urlBaseV1}/Auth/Signout");

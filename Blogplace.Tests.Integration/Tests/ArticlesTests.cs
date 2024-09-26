@@ -1,33 +1,40 @@
-﻿using Blogplace.Web.Commons;
-using Blogplace.Web.Domain.Articles;
+﻿using Blogplace.Web.Domain.Articles;
 using Blogplace.Web.Domain.Articles.Requests;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 using System.Net.Http.Json;
 
 namespace Blogplace.Tests.Integration.Tests;
 public class ArticlesTests : TestBase
 {
+    private WebApplicationFactory<Program> _factory;
+
+    [SetUp]
+    public void SetUp() => this._factory = StartServer();
+
+    [TearDown]
+    public void TearDown() => this._factory?.Dispose();
+
     [Test]
     public async Task Create_AnonymousReturnsUnauthorized()
     {
         //Arrange
-        var client = this.CreateClient(withSession: false);
+        var client = this._factory.CreateClient_Anonymous();
         var request = new CreateArticleRequest("TEST_TITLE", "TEST_CONTENT");
 
         //Act
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", request);
 
         //Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Test]
     public async Task Create_ArticleShouldBeCreated()
     {
         //Arrange
-        var client = this.CreateClient(withSession: true, permissions: CommonPermissionsEnum.ArticleCreate);
+        var client = this._factory.CreateClient_Standard();
         var createRequest = new CreateArticleRequest("TEST_TITLE", "TEST_CONTENT");
 
         //Act
@@ -42,17 +49,17 @@ public class ArticlesTests : TestBase
         result.Id.Should().Be(articleId);
         result.Title.Should().Be(createRequest.Title);
         result.Content.Should().Be(createRequest.Content);
-        result.AuthorId.Should().Be(this.currentUserId);
+        result.AuthorId.Should().Be(this.StandardUserId);
         result.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
     }
-    
+
     // TODO: Add more of these tests to all CRUD operations.
     [Test]
     public async Task Create_ArticleShouldNotBeCreatedWithoutPermission()
     {
         //Arrange
-        var client = this.CreateClient(withSession: true, permissions: CommonPermissionsEnum.None);
+        var client = this._factory.CreateClient_NonePermissions();
         var createRequest = new CreateArticleRequest("TEST_TITLE", "TEST_CONTENT");
 
         //Act
@@ -66,16 +73,13 @@ public class ArticlesTests : TestBase
     public async Task Search_ShouldReturnListOfArticles()
     {
         //Arrange
-        var client = this.CreateClient(
-            withSession: true,
-            permissions: CommonPermissionsEnum.ArticleCreate | CommonPermissionsEnum.ArticleRead
-            );
+        var client = this._factory.CreateClient_Standard();
         var article1 = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
         var article2 = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
         var article3 = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
         var request = new SearchArticlesRequest();
 
-        var anonymousClient = client.WithoutToken();
+        var anonymousClient = this._factory.CreateClient_Anonymous();
 
         //Act
         var response = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/Search", request);
@@ -91,24 +95,21 @@ public class ArticlesTests : TestBase
     public async Task Update_AnonymousReturnsUnauthorized()
     {
         //Arrange
-        var client = this.CreateClient(withSession: false);
+        var client = this._factory.CreateClient_Anonymous();
         var request = new UpdateArticleRequest(Guid.NewGuid());
 
         //Act
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Update", request);
 
         //Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Test]
     public async Task Update_ArticleShouldBeUpdated()
     {
         //Arrange
-        var client = this.CreateClient(
-            withSession: true,
-            permissions: CommonPermissionsEnum.ArticleCreate | CommonPermissionsEnum.ArticleUpdate
-            );
+        var client = this._factory.CreateClient_Standard();
         var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
 
         var updateRequest = new UpdateArticleRequest(articleId, "NEW_TITLE", "NEW_CONTENT");
@@ -117,13 +118,13 @@ public class ArticlesTests : TestBase
         var updateResponse = await client.PostAsync($"{this.urlBaseV1}/Articles/Update", updateRequest);
 
         //Assert
-        updateResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await this.GetArticleById(client, articleId, anonymous: true);
 
         result.Id.Should().Be(articleId);
         result.Title.Should().Be(updateRequest.NewTitle);
         result.Content.Should().Be(updateRequest.NewContent);
-        result.AuthorId.Should().Be(this.currentUserId);
+        result.AuthorId.Should().Be(this.StandardUserId);
         result.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().NotBe(result.CreatedAt);
@@ -133,13 +134,10 @@ public class ArticlesTests : TestBase
     public async Task Update_ArticleShouldNotBeUpdatedByOtherUser()
     {
         //Arrange
-        var client = this.CreateClient(
-            withSession: true,
-            permissions: CommonPermissionsEnum.ArticleCreate | CommonPermissionsEnum.ArticleUpdate
-            );
+        var client = this._factory.CreateClient_Standard();
         var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
 
-        var otherClient = client.WithDifferentToken();
+        var otherClient = this._factory.CreateClient_AnotherStandard();
 
         var updateRequest = new UpdateArticleRequest(articleId, "NEW_TITLE", "NEW_CONTENT");
 
@@ -147,7 +145,7 @@ public class ArticlesTests : TestBase
         var updateResponse = await otherClient.PostAsync($"{this.urlBaseV1}/Articles/Update", updateRequest);
 
         //Assert
-        updateResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         var article = await this.GetArticleById(client, articleId, anonymous: true);
 
         article.Title.Should().NotBe("NEW_TITLE");
@@ -158,24 +156,21 @@ public class ArticlesTests : TestBase
     public async Task Delete_AnonymousReturnsUnauthorized()
     {
         //Arrange
-        var client = this.CreateClient(withSession: false);
+        var client = this._factory.CreateClient_Anonymous();
         var request = new DeleteArticleRequest(Guid.NewGuid());
 
         //Act
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Delete", request);
 
         //Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Test]
     public async Task Delete_ShouldDelete()
     {
         //Arrange
-        var client = this.CreateClient(
-            withSession: true,
-            permissions: CommonPermissionsEnum.ArticleCreate | CommonPermissionsEnum.ArticleDelete
-            );
+        var client = this._factory.CreateClient_Standard();
         var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
         var request = new DeleteArticleRequest(articleId);
 
@@ -183,7 +178,7 @@ public class ArticlesTests : TestBase
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Delete", request);
 
         //Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         //todo get should return 404 Not Found
     }
@@ -192,13 +187,10 @@ public class ArticlesTests : TestBase
     public async Task Delete_ShouldNotBeDeletedByOtherUser()
     {
         //Arrange
-        var client = this.CreateClient(
-            withSession: true,
-            permissions: CommonPermissionsEnum.ArticleCreate | CommonPermissionsEnum.ArticleDelete
-            );
+        var client = this._factory.CreateClient_Standard();
         var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
 
-        var otherClient = client.WithDifferentToken();
+        var otherClient = this._factory.CreateClient_AnotherStandard();
 
         var request = new DeleteArticleRequest(articleId);
 
@@ -206,7 +198,7 @@ public class ArticlesTests : TestBase
         var response = await otherClient.PostAsync($"{this.urlBaseV1}/Articles/Delete", request);
 
         //Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         var article = await this.GetArticleById(client, articleId, anonymous: true);
         article.Should().NotBeNull();
     }
@@ -218,10 +210,7 @@ public class ArticlesTests : TestBase
     public async Task View_ShouldIncreaseCounter_IfValid(bool sameUserAgent, bool sameArticleId, int delay, bool shouldIncrease)
     {
         //Arrange
-        var client = this.CreateClient(
-            withSession: true,
-            permissions: CommonPermissionsEnum.ArticleCreate | CommonPermissionsEnum.ArticleRead
-            );
+        var client = this._factory.CreateClient_Standard();
         var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
 
         var headersGetPost = new Dictionary<string, string>()
@@ -238,7 +227,7 @@ public class ArticlesTests : TestBase
         };
 
         //Act
-        var anonymousClient = client.WithoutToken();
+        var anonymousClient = this._factory.CreateClient_Anonymous();
         var getRequest = new GetArticleRequest(articleId);
         var getResponse = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/Get", getRequest, customHeaders: headersGetPost);
         (await getResponse.Content.ReadFromJsonAsync<GetArticleResponse>())!
@@ -262,17 +251,17 @@ public class ArticlesTests : TestBase
     {
         var request = new CreateArticleRequest(title, content);
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", request);
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         var articleId = (await response.Content.ReadFromJsonAsync<CreateArticleResponse>())!.Id;
         return articleId;
     }
 
     private async Task<ArticleDto> GetArticleById(ApiClient client, Guid articleId, bool anonymous = false)
     {
-        var currentClient = anonymous ? client.WithoutToken() : client;
+        var currentClient = anonymous ? this._factory.CreateClient_Anonymous() : client;
         var getRequest = new GetArticleRequest(articleId);
         var getResponse = await currentClient.PostAsync($"{this.urlBaseV1}/Articles/Get", getRequest);
-        getResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = (await getResponse.Content.ReadFromJsonAsync<GetArticleResponse>())!.Article;
         return result;

@@ -3,9 +3,9 @@ using System.Text.RegularExpressions;
 
 namespace Blogplace.Web.Domain.Users;
 
-public class User(string email, CommonPermissionsEnum permissions, Guid? userId = null)
+public class User(string email, CommonPermissionsEnum permissions)
 {
-    public Guid Id { get; } = userId ?? Guid.NewGuid();
+    public Guid Id { get; } = Guid.NewGuid();
     public string Email { get; } = email;
     //Default username = part of email before last @ sign
     //testuser@example.com => testuser
