@@ -1,11 +1,6 @@
 ﻿using Blogplace.Web.Auth;
 using Blogplace.Web.Commons;
 using FluentAssertions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Blogplace.Tests.Unit.Tests;
 
@@ -22,6 +17,20 @@ internal class PermissionsCheckerTests
             .CanCreateArticle(permissions)
             .Should().Be(expected);
                     
+        return Task.CompletedTask;
+    }
+
+    [Test]
+    [TestCase(CommonPermissionsEnum.ArticleRead, true)]
+    [TestCase(CommonPermissionsEnum.All & ~CommonPermissionsEnum.ArticleRead, false)]
+    public Task PermissionsChecker_CanReadArticle(CommonPermissionsEnum permissions, bool expected)
+    {
+        var permissionsChecker = new PermissionsChecker();
+
+        permissionsChecker
+            .CanReadArticle(permissions)
+            .Should().Be(expected);
+
         return Task.CompletedTask;
     }
 }
