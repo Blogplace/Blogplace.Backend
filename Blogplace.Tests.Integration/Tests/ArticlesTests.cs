@@ -2,13 +2,18 @@
 using Blogplace.Web.Domain.Articles;
 using Blogplace.Web.Domain.Articles.Requests;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
 
 namespace Blogplace.Tests.Integration.Tests;
 public class ArticlesTests : TestBase
 {
+    [SetUp]
+    public void SetUp()
+    {
+        var factory = this.StartServer();
+    }
+
     [Test]
     public async Task Create_AnonymousReturnsUnauthorized()
     {
