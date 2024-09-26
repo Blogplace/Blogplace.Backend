@@ -49,7 +49,7 @@ public class ArticlesTests : TestBase
         result.Id.Should().Be(articleId);
         result.Title.Should().Be(createRequest.Title);
         result.Content.Should().Be(createRequest.Content);
-        result.AuthorId.Should().Be(this.StandardUserId);
+        result.AuthorId.Should().Be(StandardUserId);
         result.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
     }
@@ -124,7 +124,7 @@ public class ArticlesTests : TestBase
         result.Id.Should().Be(articleId);
         result.Title.Should().Be(updateRequest.NewTitle);
         result.Content.Should().Be(updateRequest.NewContent);
-        result.AuthorId.Should().Be(this.StandardUserId);
+        result.AuthorId.Should().Be(StandardUserId);
         result.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().NotBe(result.CreatedAt);

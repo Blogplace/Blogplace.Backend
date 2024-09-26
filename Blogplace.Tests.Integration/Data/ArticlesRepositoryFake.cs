@@ -1,5 +1,4 @@
 ﻿using Blogplace.Web.Domain.Articles;
-using Blogplace.Web.Domain.Users;
 using Blogplace.Web.Infrastructure.Database;
 
 namespace Blogplace.Tests.Integration.Data;
@@ -39,48 +38,6 @@ public class ArticlesRepositoryFake : IArticlesRepository
     {
         var item = this.Articles.Single(x => x.Id == id);
         this.Articles.Remove(item);
-        return Task.CompletedTask;
-    }
-}
-
-public class UsersRepositoryFake : IUsersRepository
-{
-    //there could be more predefined "actors", like moderator, banned etc
-    //todo: set default user permissions
-    public static User Standard { get; } = new User($"{nameof(Standard).ToLower()}@blogplace.com", Web.Commons.CommonPermissionsEnum.All);
-    public static User AnotherStandard { get; } = new User($"{nameof(AnotherStandard).ToLower()}@blogplace.com", Web.Commons.CommonPermissionsEnum.All);
-    public static User NonePermissions { get; } = new User($"{nameof(NonePermissions).ToLower()}@blogplace.com", Web.Commons.CommonPermissionsEnum.None);
-
-    public List<User> Users { get; set; } = 
-    [
-        Standard,
-        AnotherStandard,
-        NonePermissions
-    ];
-
-    public Task Add(User user)
-    {
-        this.Users.Add(user);
-        return Task.CompletedTask;
-    }
-
-    public Task<User> Get(Guid id)
-    {
-        var result = this.Users.Single(x => x.Id == id);
-        return Task.FromResult(result!);
-    }
-
-    public Task<User?> GetByEmail(string email)
-    {
-        var result = this.Users.SingleOrDefault(x => x.Email == email);
-        return Task.FromResult(result);
-    }
-
-    public Task Update(User user)
-    {
-        var item = this.Users.Single(x => x.Id == user.Id);
-        item.Username = user.Username;
-        item.UpdatedAt = DateTime.UtcNow;
         return Task.CompletedTask;
     }
 }
