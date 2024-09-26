@@ -1,4 +1,5 @@
 ﻿using Blogplace.Web.Domain.Articles;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Blogplace.Web.Infrastructure.Database;
 
@@ -11,6 +12,7 @@ public interface IArticlesRepository
     Task Update(Article article);
 }
 
+[ExcludeFromCodeCoverage]
 public class ArticlesRepository : IArticlesRepository
 {
     private readonly List<Article> _articles = [];

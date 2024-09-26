@@ -9,10 +9,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Blogplace.Web;
 
+[ExcludeFromCodeCoverage]
 public static class ServiceExtensions
 {
     public static WebApplicationBuilder SetupSerilog(this WebApplicationBuilder builder)
