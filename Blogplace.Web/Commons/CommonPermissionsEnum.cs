@@ -20,5 +20,5 @@ public enum CommonPermissionsEnum : int
     ProfileUpdate = 1 << 10,
     ProfileDelete = 1 << 11,
     
-    All = Int32.MaxValue
+    All = int.MaxValue
 }

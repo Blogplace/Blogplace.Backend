@@ -46,11 +46,16 @@ public class ArticlesRepositoryFake : IArticlesRepository
 public class UsersRepositoryFake : IUsersRepository
 {
     //there could be more predefined "actors", like moderator, banned etc
-    public static User Standard { get; } = new User("standard@blogplace.com", Web.Commons.CommonPermissionsEnum.All);
+    //todo: set default user permissions
+    public static User Standard { get; } = new User($"{nameof(Standard).ToLower()}@blogplace.com", Web.Commons.CommonPermissionsEnum.All);
+    public static User AnotherStandard { get; } = new User($"{nameof(AnotherStandard).ToLower()}@blogplace.com", Web.Commons.CommonPermissionsEnum.All);
+    public static User NonePermissions { get; } = new User($"{nameof(NonePermissions).ToLower()}@blogplace.com", Web.Commons.CommonPermissionsEnum.None);
 
     public List<User> Users { get; set; } = 
     [
-        Standard
+        Standard,
+        AnotherStandard,
+        NonePermissions
     ];
 
     public Task Add(User user)
