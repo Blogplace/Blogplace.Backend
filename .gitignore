@@ -6,6 +6,9 @@
 logs/
 coverage/
 
+# Jetbrains platform files
+.idea/
+
 # User-specific files
 *.rsuser
 *.suo
