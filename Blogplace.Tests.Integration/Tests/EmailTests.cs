@@ -15,7 +15,7 @@ public class EmailTests : TestBase
     private WebApplicationFactory<Program> _factory;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public void OneTimeSetUp()
     {
         this.mailpitContainer = new ContainerBuilder()
             .WithImage("axllent/mailpit")
@@ -23,7 +23,7 @@ public class EmailTests : TestBase
             .WithPortBinding(8025, true)
             .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(r => r.ForPort(8025)))
             .Build();
-        await this.mailpitContainer.StartAsync();
+        this.mailpitContainer.StartAsync().Wait();
 
         this._factory = StartServer(x => x.Configure<EmailOptions>(o =>
             {
@@ -34,16 +34,15 @@ public class EmailTests : TestBase
                 o.SenderEmail = "test@blogplace";
                 o.EnableSsl = false;
             }));
-
     }
 
     [OneTimeTearDown]
-    public async Task OneTimeTearDown()
+    public void OneTimeTearDown()
     {
         this._factory?.Dispose();
         if (this.mailpitContainer != null)
         {
-            await this.mailpitContainer.StopAsync();
+            this.mailpitContainer.StopAsync().Wait();
         }
     }
 

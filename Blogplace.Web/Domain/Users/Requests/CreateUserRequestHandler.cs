@@ -17,7 +17,7 @@ public class CreateUserRequestHandler(
 {
     public async Task<CreateUserResponse> Handle(CreateUserRequest request, CancellationToken cancellationToken)
     {
-        var defaultPermissions = (CommonPermissionsEnum)permissionsOptions.Value.DefaultPermissions.Select(x => (int)x).Sum();
+        var defaultPermissions = permissionsOptions.Value.GetDefault();
         var user = new User(request.Email, defaultPermissions);
         await repository.Add(user);
         logger.UserCreated(user.Id);
