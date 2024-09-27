@@ -53,8 +53,7 @@ public class ArticlesTests : TestBase
         result.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
     }
-
-    // TODO: Add more of these tests to all CRUD operations.
+    
     [Test]
     public async Task Create_ArticleShouldNotBeCreatedWithoutPermission()
     {
@@ -148,6 +147,27 @@ public class ArticlesTests : TestBase
         updateResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         var article = await this.GetArticleById(client, articleId, anonymous: true);
 
+        article.Title.Should().NotBe("NEW_TITLE");
+        article.Content.Should().NotBe("NEW_CONTENT");
+    }
+
+    [Test]
+    public async Task Update_ArticleShouldNotBeUpdatedWithoutPermission()
+    {
+        //Arrange
+        var root = this._factory.CreateClient_Standard();
+        var articleId = await this.CreateArticle(root, "TEST_TITLE", "TEST_CONTENT");
+
+        var client = this._factory.CreateClient_NonePermissions();
+        var updateRequest = new UpdateArticleRequest(articleId, "NEW_TITLE", "NEW_CONTENT");
+
+        //Act
+        var updateResponse = await client.PostAsync($"{this.urlBaseV1}/Articles/Update", updateRequest);
+
+        //Assert
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        var article = await this.GetArticleById(root, articleId);
         article.Title.Should().NotBe("NEW_TITLE");
         article.Content.Should().NotBe("NEW_CONTENT");
     }

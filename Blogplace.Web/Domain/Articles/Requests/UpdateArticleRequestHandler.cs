@@ -7,10 +7,23 @@ using MediatR;
 namespace Blogplace.Web.Domain.Articles.Requests;
 
 public record UpdateArticleRequest(Guid Id, string? NewTitle = null, string? NewContent = null) : IRequest;
-public class UpdateArticleRequestHandler(ISessionStorage sessionStorage, IArticlesRepository repository, IEventLogger logger) : IRequestHandler<UpdateArticleRequest>
+
+public class UpdateArticleRequestHandler(
+    ISessionStorage sessionStorage,
+    IArticlesRepository repository,
+    IUsersRepository usersRepository,
+    IPermissionsChecker permissionsChecker,
+    IEventLogger logger
+) : IRequestHandler<UpdateArticleRequest>
 {
     public async Task Handle(UpdateArticleRequest request, CancellationToken cancellationToken)
     {
+        var user = await usersRepository.Get(sessionStorage.UserId);
+        if (!permissionsChecker.CanUpdateArticle(user.Permissions))
+        {
+            throw new UserNotAuthorizedException("No permission to update the article");
+        }
+        
         var isChanged = false;
         //todo get only author of article
         var article = await repository.Get(request.Id);
