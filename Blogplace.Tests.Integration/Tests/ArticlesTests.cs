@@ -203,6 +203,25 @@ public class ArticlesTests : TestBase
         article.Should().NotBeNull();
     }
 
+    [Test]
+    public async Task Delete_ShouldNotBeDeletedWithoutPermission()
+    {
+        //Arrange
+        var root = this._factory.CreateClient_Standard();
+        var articleId = await this.CreateArticle(root, "TEST_TITLE", "TEST_CONTENT");
+
+        var client = this._factory.CreateClient_NonePermissions();
+        var request = new DeleteArticleRequest(articleId);
+
+        //Act
+        var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Delete", request);
+
+        //Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        var article = await this.GetArticleById(root, articleId, true);
+        article.Should().NotBeNull();
+    }
+
     [TestCase(true, true, 3000, true)]
     [TestCase(true, true, 500, false)]
     [TestCase(true, false, 3000, false)]

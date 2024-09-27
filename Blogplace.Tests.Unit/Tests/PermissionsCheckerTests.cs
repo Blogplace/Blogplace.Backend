@@ -33,5 +33,19 @@ internal class PermissionsCheckerTests
 
         return Task.CompletedTask;
     }
+
+    [Test]
+    [TestCase(CommonPermissionsEnum.ArticleDelete, true)]
+    [TestCase(CommonPermissionsEnum.All & ~CommonPermissionsEnum.ArticleDelete, false)]
+    public Task PermissionsChecker_CanDeleteArticle(CommonPermissionsEnum permissions, bool expected)
+    {
+        var permissionsChecker = new PermissionsChecker();
+
+        permissionsChecker
+            .CanDeleteArticle(permissions)
+            .Should().Be(expected);
+
+        return Task.CompletedTask;
+    }
 }
 
