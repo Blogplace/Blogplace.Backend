@@ -21,7 +21,7 @@ public class UpdateArticleRequestHandler(
         var user = await usersRepository.Get(sessionStorage.UserId);
         if (!permissionsChecker.CanUpdateArticle(user.Permissions))
         {
-            throw new UserNotAuthorizedException("No permission to update the article");
+            throw new UserPermissionDeniedException("No permission to update the article");
         }
         
         var isChanged = false;
