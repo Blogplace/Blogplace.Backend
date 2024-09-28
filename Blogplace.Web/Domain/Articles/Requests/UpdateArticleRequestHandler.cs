@@ -21,7 +21,7 @@ public class UpdateArticleRequestHandler(
         var user = await usersRepository.Get(sessionStorage.UserId);
         if (!permissionsChecker.CanUpdateArticle(user.Permissions))
         {
-            throw new UserNotAuthorizedException("No permission to update the article");
+            throw new UserPermissionDeniedException("No permission to update the article");
         }
         
         var isChanged = false;
@@ -30,7 +30,7 @@ public class UpdateArticleRequestHandler(
 
         if (article.AuthorId != sessionStorage.UserId)
         {
-            throw new UserNotAuthorizedException("Requester is not author of article");
+            throw new UserPermissionDeniedException("Requester is not author of article");
         }
 
         if (request.NewTitle != null)
