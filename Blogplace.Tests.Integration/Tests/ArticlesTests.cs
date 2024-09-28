@@ -66,7 +66,7 @@ public class ArticlesTests : TestBase
         var createResponse = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", createRequest);
 
         //Assert
-        createResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Test]
@@ -145,7 +145,7 @@ public class ArticlesTests : TestBase
         var updateResponse = await otherClient.PostAsync($"{this.urlBaseV1}/Articles/Update", updateRequest);
 
         //Assert
-        updateResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         var article = await this.GetArticleById(client, articleId, anonymous: true);
 
         article.Title.Should().NotBe("NEW_TITLE");
@@ -164,7 +164,7 @@ public class ArticlesTests : TestBase
         var updateResponse = await client.PostAsync($"{this.urlBaseV1}/Articles/Update", updateRequest);
 
         //Assert
-        updateResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
 
         var article = await this.GetArticleById(client, articleId, true);
         article.Title.Should().NotBe("NEW_TITLE");
@@ -217,7 +217,7 @@ public class ArticlesTests : TestBase
         var response = await otherClient.PostAsync($"{this.urlBaseV1}/Articles/Delete", request);
 
         //Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         var article = await this.GetArticleById(client, articleId, anonymous: true);
         article.Should().NotBeNull();
     }
@@ -234,7 +234,7 @@ public class ArticlesTests : TestBase
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Delete", request);
 
         //Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         var article = await this.GetArticleById(client, articleId, true);
         article.Should().NotBeNull();
     }
