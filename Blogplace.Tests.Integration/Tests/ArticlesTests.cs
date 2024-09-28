@@ -1,4 +1,5 @@
-﻿using Blogplace.Web.Domain.Articles;
+﻿using Blogplace.Tests.Integration.Data;
+using Blogplace.Web.Domain.Articles;
 using Blogplace.Web.Domain.Articles.Requests;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -53,8 +54,7 @@ public class ArticlesTests : TestBase
         result.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
     }
-
-    // TODO: Add more of these tests to all CRUD operations.
+    
     [Test]
     public async Task Create_ArticleShouldNotBeCreatedWithoutPermission()
     {
@@ -85,10 +85,10 @@ public class ArticlesTests : TestBase
         var response = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/Search", request);
 
         //Assert
-        var result = (await response.Content.ReadFromJsonAsync<SearchArticlesResponse>())!.Articles;
+        var result = (await response.Content.ReadFromJsonAsync<SearchArticlesResponse>())!.Articles.ToArray();
         result.Should().NotBeEmpty();
-        result.Should().HaveCount(3);
-        result.Select(x => x.Id).ToArray().Should().BeEquivalentTo([article1, article2, article3]);
+        result.Should().HaveCountGreaterThan(3);
+        result.Select(x => x.Id).ToArray().Should().Contain([article1, article2, article3]);
     }
 
     [Test]
@@ -153,6 +153,25 @@ public class ArticlesTests : TestBase
     }
 
     [Test]
+    public async Task Update_ArticleShouldNotBeUpdatedWithoutPermission()
+    {
+        //Arrange
+        var client = this._factory.CreateClient_NonePermissions();
+        var articleId = ArticlesRepositoryFake.NonePermissionsUserArticle!.Id;
+        var updateRequest = new UpdateArticleRequest(articleId, "NEW_TITLE", "NEW_CONTENT");
+
+        //Act
+        var updateResponse = await client.PostAsync($"{this.urlBaseV1}/Articles/Update", updateRequest);
+
+        //Assert
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        var article = await this.GetArticleById(client, articleId, true);
+        article.Title.Should().NotBe("NEW_TITLE");
+        article.Content.Should().NotBe("NEW_CONTENT");
+    }
+
+    [Test]
     public async Task Delete_AnonymousReturnsUnauthorized()
     {
         //Arrange
@@ -200,6 +219,23 @@ public class ArticlesTests : TestBase
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         var article = await this.GetArticleById(client, articleId, anonymous: true);
+        article.Should().NotBeNull();
+    }
+
+    [Test]
+    public async Task Delete_ShouldNotBeDeletedWithoutPermission()
+    {
+        //Arrange
+        var client = this._factory.CreateClient_NonePermissions();
+        var articleId = ArticlesRepositoryFake.NonePermissionsUserArticle!.Id;
+        var request = new DeleteArticleRequest(articleId);
+
+        //Act
+        var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Delete", request);
+
+        //Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        var article = await this.GetArticleById(client, articleId, true);
         article.Should().NotBeNull();
     }
 

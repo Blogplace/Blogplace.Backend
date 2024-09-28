@@ -8,7 +8,6 @@ namespace Blogplace.Web.Domain.Articles.Requests;
 
 public record CreateArticleResponse(Guid Id);
 public record CreateArticleRequest(string Title, string Content) : IRequest<CreateArticleResponse>;
-
 public class CreateArticleRequestHandler(
     ISessionStorage sessionStorage,
     IArticlesRepository repository,
@@ -24,7 +23,7 @@ public class CreateArticleRequestHandler(
 
         if (!permissionsChecker.CanCreateArticle(user.Permissions))
         {
-            throw new UserNotAuthorizedException("No permissions");
+            throw new UserNotAuthorizedException("No permission to create the article");
         }
 
         var article = new Article(request.Title, request.Content, userId);

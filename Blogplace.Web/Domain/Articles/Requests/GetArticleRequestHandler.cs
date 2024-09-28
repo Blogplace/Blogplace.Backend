@@ -7,7 +7,12 @@ namespace Blogplace.Web.Domain.Articles.Requests;
 
 public record GetArticleResponse(ArticleDto Article, Guid ViewId);
 public record GetArticleRequest(Guid Id) : IRequest<GetArticleResponse>;
-public class GetArticleRequestHandler(IArticlesRepository repository, IMemoryCache cache, ISessionStorage sessionStorage) : IRequestHandler<GetArticleRequest, GetArticleResponse>
+
+public class GetArticleRequestHandler(
+    IArticlesRepository repository,
+    IMemoryCache cache,
+    ISessionStorage sessionStorage
+) : IRequestHandler<GetArticleRequest, GetArticleResponse>
 {
     public async Task<GetArticleResponse> Handle(GetArticleRequest request, CancellationToken cancellationToken)
     {

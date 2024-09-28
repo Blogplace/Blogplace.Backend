@@ -5,7 +5,25 @@ namespace Blogplace.Tests.Integration.Data;
 
 public class ArticlesRepositoryFake : IArticlesRepository
 {
-    public List<Article> Articles { get; set; } = [];
+    public static Article? NonePermissionsUserArticle { get; set; }
+
+    public List<Article> Articles { get; }
+
+    private static readonly object obj = new();
+
+    public ArticlesRepositoryFake()
+    {
+        lock (obj)
+        {
+            NonePermissionsUserArticle ??=
+                new Article("TEST_TITLE", "TEST_CONTENT", UsersRepositoryFake.NonePermissions!.Id);
+        }
+
+        this.Articles =
+        [
+            NonePermissionsUserArticle
+        ];
+    }
 
     public Task Add(Article article)
     {

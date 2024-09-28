@@ -8,7 +8,6 @@ namespace Blogplace.Tests.Integration.Data;
 public class UsersRepositoryFake : IUsersRepository
 {
     //there could be more predefined "actors", like moderator, banned etc
-    //todo: set default user permissions
     public static User? Standard { get; private set; }
     public static User? AnotherStandard { get; private set; }
     public static User? NonePermissions { get; private set; }
