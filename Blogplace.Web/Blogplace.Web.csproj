@@ -8,15 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="MediatR" Version="12.2.0" />
+	<PackageReference Include="MediatR" Version="12.4.1" />
 	<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.0" />
 	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
-	<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.3.0" />
-	<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.2.0" />
+	<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.1.0" />
+	<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.1.0" />
   </ItemGroup>
 
 </Project>
