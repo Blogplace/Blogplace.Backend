@@ -30,7 +30,7 @@ public class UpdateArticleRequestHandler(
 
         if (article.AuthorId != sessionStorage.UserId)
         {
-            throw new UserNotAuthorizedException("Requester is not author of article");
+            throw new UserPermissionDeniedException("Requester is not author of article");
         }
 
         if (request.NewTitle != null)
