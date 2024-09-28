@@ -19,14 +19,14 @@ internal class PermissionsCheckerTests
     }
 
     [Test]
-    [TestCase(CommonPermissionsEnum.ArticleRead, true)]
-    [TestCase(CommonPermissionsEnum.All & ~CommonPermissionsEnum.ArticleRead, false)]
-    public void PermissionsChecker_CanReadArticle(CommonPermissionsEnum permissions, bool expected)
+    [TestCase(CommonPermissionsEnum.ArticleUpdate, true)]
+    [TestCase(CommonPermissionsEnum.All & ~CommonPermissionsEnum.ArticleUpdate, false)]
+    public void PermissionsChecker_CanUpdateArticle(CommonPermissionsEnum permissions, bool expected)
     {
         var permissionsChecker = new PermissionsChecker();
 
         permissionsChecker
-            .CanReadArticle(permissions)
+            .CanUpdateArticle(permissions)
             .Should().Be(expected);
     }
 

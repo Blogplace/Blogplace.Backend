@@ -11,21 +11,11 @@ public record GetArticleRequest(Guid Id) : IRequest<GetArticleResponse>;
 public class GetArticleRequestHandler(
     IArticlesRepository repository,
     IMemoryCache cache,
-    // IUsersRepository usersRepository,
-    // IPermissionsChecker permissionsChecker,
     ISessionStorage sessionStorage
 ) : IRequestHandler<GetArticleRequest, GetArticleResponse>
 {
     public async Task<GetArticleResponse> Handle(GetArticleRequest request, CancellationToken cancellationToken)
     {
-        // Currently there's no need to check for the permissions because request is Anonymous
-        /* var user = await usersRepository.Get(sessionStorage.UserId);
-         * if (!permissionsChecker.CanReadArticle(user.Permissions))
-         * {
-         *     throw new UserNotAuthorizedException("No permission to read the article");
-         * }
-         */
-        
         var result = await repository.Get(request.Id);
         var dto = new ArticleDto(result.Id, result.Title, result.Content, result.Views, result.CreatedAt, result.UpdatedAt, result.AuthorId);
 
