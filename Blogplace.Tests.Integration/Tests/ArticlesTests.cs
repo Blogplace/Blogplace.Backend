@@ -1,4 +1,5 @@
-﻿using Blogplace.Web.Domain.Articles;
+﻿using Blogplace.Tests.Integration.Data;
+using Blogplace.Web.Domain.Articles;
 using Blogplace.Web.Domain.Articles.Requests;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -84,10 +85,10 @@ public class ArticlesTests : TestBase
         var response = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/Search", request);
 
         //Assert
-        var result = (await response.Content.ReadFromJsonAsync<SearchArticlesResponse>())!.Articles;
+        var result = (await response.Content.ReadFromJsonAsync<SearchArticlesResponse>())!.Articles.ToArray();
         result.Should().NotBeEmpty();
-        result.Should().HaveCount(3);
-        result.Select(x => x.Id).ToArray().Should().BeEquivalentTo([article1, article2, article3]);
+        result.Should().HaveCountGreaterThan(3);
+        result.Select(x => x.Id).ToArray().Should().Contain([article1, article2, article3]);
     }
 
     [Test]
@@ -155,10 +156,8 @@ public class ArticlesTests : TestBase
     public async Task Update_ArticleShouldNotBeUpdatedWithoutPermission()
     {
         //Arrange
-        var root = this._factory.CreateClient_Standard();
-        var articleId = await this.CreateArticle(root, "TEST_TITLE", "TEST_CONTENT");
-
         var client = this._factory.CreateClient_NonePermissions();
+        var articleId = ArticlesRepositoryFake.NonePermissionsUserArticle!.Id;
         var updateRequest = new UpdateArticleRequest(articleId, "NEW_TITLE", "NEW_CONTENT");
 
         //Act
@@ -167,7 +166,7 @@ public class ArticlesTests : TestBase
         //Assert
         updateResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
-        var article = await this.GetArticleById(root, articleId);
+        var article = await this.GetArticleById(client, articleId, true);
         article.Title.Should().NotBe("NEW_TITLE");
         article.Content.Should().NotBe("NEW_CONTENT");
     }
@@ -227,10 +226,8 @@ public class ArticlesTests : TestBase
     public async Task Delete_ShouldNotBeDeletedWithoutPermission()
     {
         //Arrange
-        var root = this._factory.CreateClient_Standard();
-        var articleId = await this.CreateArticle(root, "TEST_TITLE", "TEST_CONTENT");
-
         var client = this._factory.CreateClient_NonePermissions();
+        var articleId = ArticlesRepositoryFake.NonePermissionsUserArticle!.Id;
         var request = new DeleteArticleRequest(articleId);
 
         //Act
@@ -238,7 +235,7 @@ public class ArticlesTests : TestBase
 
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-        var article = await this.GetArticleById(root, articleId, true);
+        var article = await this.GetArticleById(client, articleId, true);
         article.Should().NotBeNull();
     }
 
