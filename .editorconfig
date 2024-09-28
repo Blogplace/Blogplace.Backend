@@ -279,3 +279,6 @@ dotnet_style_qualification_for_field = true:error
 dotnet_style_qualification_for_property = true:error
 dotnet_style_qualification_for_method = true:error
 dotnet_style_qualification_for_event = true:error
+
+# CA2213: Disposable fields should be disposed
+dotnet_diagnostic.CA2213.severity = warning

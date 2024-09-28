@@ -40,6 +40,7 @@ public class EmailTests : TestBase
     public void OneTimeTearDown()
     {
         this._factory?.Dispose();
+        this.mailpitContainer?.StopAsync().Wait();
         this.mailpitContainer?.DisposeAsync().AsTask().Wait();
     }
 
