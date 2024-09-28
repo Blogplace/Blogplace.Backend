@@ -21,14 +21,14 @@ public class DeleteArticleRequestHandler(
         var user = await usersRepository.Get(sessionStorage.UserId);
         if (!permissionsChecker.CanDeleteArticle(user.Permissions))
         {
-            throw new UserNotAuthorizedException("No permission to delete the article");
+            throw new UserPermissionDeniedException("No permission to delete the article");
         }
         
         //todo get only author of article
         var article = await repository.Get(request.Id);
         if (article.AuthorId != sessionStorage.UserId)
         {
-            throw new UserNotAuthorizedException("Requester is not author of article");
+            throw new UserPermissionDeniedException("Requester is not author of article");
         }
 
         await repository.Delete(request.Id);

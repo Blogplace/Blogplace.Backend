@@ -23,7 +23,7 @@ public class CreateArticleRequestHandler(
 
         if (!permissionsChecker.CanCreateArticle(user.Permissions))
         {
-            throw new UserNotAuthorizedException("No permission to create the article");
+            throw new UserPermissionDeniedException("No permission to create the article");
         }
 
         var article = new Article(request.Title, request.Content, userId);
