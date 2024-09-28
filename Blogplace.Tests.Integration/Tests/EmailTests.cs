@@ -43,6 +43,7 @@ public class EmailTests : TestBase
         if (this.mailpitContainer != null)
         {
             this.mailpitContainer.StopAsync().Wait();
+            this.mailpitContainer.DisposeAsync().AsTask().Wait();
         }
     }
 
