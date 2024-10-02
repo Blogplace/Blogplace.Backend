@@ -7,7 +7,8 @@ namespace Blogplace.Web.Domain.Comments.Requests;
 
 public record CreateCommentResponse(Guid Id);
 
-public record CreateCommentRequest(Guid ArticleId, string Content, Guid? ParentId) : IRequest<CreateCommentResponse>;
+public record CreateCommentRequest(Guid ArticleId, string Content, Guid? ParentId = null)
+    : IRequest<CreateCommentResponse>;
 
 public class CreateCommentRequestHandler(
     ISessionStorage sessionStorage,
