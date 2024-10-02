@@ -4,7 +4,7 @@
 public record CommentDto(
     Guid Id,
     Guid ArticleId,
-    long? ParentId,
+    Guid? ParentId,
     Guid AuthorId,
     string Content,
     DateTime CreatedAt,
