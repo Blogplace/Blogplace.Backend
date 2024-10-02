@@ -12,6 +12,7 @@ public interface IEventLogger
     void UserDeletedArticle(Guid userId, Guid articleId);
     void UserUpdatedArticle(Guid userId, Guid articleId);
     void UserViewedArticle(Guid userId, Guid articleId);
+    void UserCreatedComment(Guid userId, Guid commentId);
     void EmailSent(string email, string subject);
 }
 
@@ -43,6 +44,9 @@ public class EventLogger(ILogger logger) : IEventLogger
     public void UserViewedArticle(Guid userId, Guid articleId)
         => this.Info(nameof(this.UserViewedArticle), new { UserId = userId, ArticleId = articleId });
 
+    public void UserCreatedComment(Guid userId, Guid commentId)
+        => this.Info(nameof(this.UserCreatedComment), new { UserId = userId, CommentId = commentId });
+    
     public void EmailSent(string email, string subject)
         => this.Info(nameof(this.EmailSent), new { Email = email, Subject = subject });
 
