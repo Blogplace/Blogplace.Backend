@@ -1,5 +1,6 @@
 ﻿using Blogplace.Web.Domain.Articles;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Blogplace.Web.Infrastructure.Database;
 
@@ -8,7 +9,8 @@ public interface ITagsRepository
     Task Add(Tag tag);
     Task Delete(Guid id);
     Task<Tag> Get(Guid id);
-    Task<IEnumerable<Tag>> Get(IEnumerable<Guid> ids);
+    Task<IEnumerable<Tag>> Get(IEnumerable<string> names);
+    public Task AddIfNotExists(IEnumerable<string> names);
 }
 
 [ExcludeFromCodeCoverage]
@@ -28,9 +30,9 @@ public class TagsRepository : ITagsRepository
         return Task.FromResult(result!);
     }
 
-    public Task<IEnumerable<Tag>> Get(IEnumerable<Guid> ids)
+    public Task<IEnumerable<Tag>> Get(IEnumerable<string> names)
     {
-        var result = this._tags.Where(x => ids.Contains(x.Id));
+        var result = names.Select(x => this._tags.First(t => t.Name == x));
         return Task.FromResult(result!);
     }
 
@@ -38,6 +40,15 @@ public class TagsRepository : ITagsRepository
     {
         var item = this._tags.Single(x => x.Id == id);
         this._tags.Remove(item);
+        return Task.CompletedTask;
+    }
+
+    public Task AddIfNotExists(IEnumerable<string> names) 
+    {
+        var toAdd = names
+            .Where(x => this._tags.Any(t => t.Name == x))
+            .Select(x => new Tag(x));
+        this._tags.AddRange(toAdd);
         return Task.CompletedTask;
     }
 }

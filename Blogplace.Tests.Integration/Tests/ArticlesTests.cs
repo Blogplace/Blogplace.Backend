@@ -22,7 +22,7 @@ public class ArticlesTests : TestBase
     {
         //Arrange
         var client = this._factory.CreateClient_Anonymous();
-        var request = new CreateArticleRequest("TEST_TITLE", "TEST_CONTENT");
+        var request = new CreateArticleRequest("TEST_TITLE", "TEST_CONTENT", ["default"]);
 
         //Act
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", request);
@@ -36,7 +36,7 @@ public class ArticlesTests : TestBase
     {
         //Arrange
         var client = this._factory.CreateClient_Standard();
-        var createRequest = new CreateArticleRequest("TEST_TITLE", "TEST_CONTENT");
+        var createRequest = new CreateArticleRequest("TEST_TITLE", "TEST_CONTENT", ["default"]);
 
         //Act
         var createResponse = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", createRequest);
@@ -60,7 +60,7 @@ public class ArticlesTests : TestBase
     {
         //Arrange
         var client = this._factory.CreateClient_NonePermissions();
-        var createRequest = new CreateArticleRequest("TEST_TITLE", "TEST_CONTENT");
+        var createRequest = new CreateArticleRequest("TEST_TITLE", "TEST_CONTENT", ["default"]);
 
         //Act
         var createResponse = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", createRequest);
@@ -285,7 +285,7 @@ public class ArticlesTests : TestBase
 
     private async Task<Guid> CreateArticle(ApiClient client, string title, string content)
     {
-        var request = new CreateArticleRequest(title, content);
+        var request = new CreateArticleRequest(title, content, ["default"]);
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", request);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var articleId = (await response.Content.ReadFromJsonAsync<CreateArticleResponse>())!.Id;
