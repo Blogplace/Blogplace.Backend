@@ -50,8 +50,9 @@ public class TagsCleaningServiceTests
     [CancelAfter(3_000)]
     public async Task ShouldAddTagToWhitelist_AndNotDelete_IfTimeIsShort()
     {
+        var lastCleaningTime = DateTime.UtcNow;
         await this.SetupService();
-        this.SetLastCleaning(DateTime.UtcNow);
+        this.SetLastCleaning(lastCleaningTime);
 
         var id = Guid.NewGuid();
         await this._channel.Publish(id);
@@ -62,7 +63,7 @@ public class TagsCleaningServiceTests
         this._articlesRepositoryMock.Verify(x => x.CountArticlesThatContainsTag(id), Times.Never);
         this._tagsRepositoryMock.Verify(x => x.Delete(id), Times.Never);
 
-        this.GetLastCleaning().Should().BeBefore(DateTime.UtcNow.AddSeconds(-3));
+        this.GetLastCleaning().Should().Be(lastCleaningTime);
     }
 
     [Test]
