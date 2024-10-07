@@ -52,7 +52,7 @@ public class TagsRepositoryFake : ITagsRepository
     public Task AddIfNotExists(IEnumerable<string> names)
     {
         var toAdd = names
-            .Where(x => this.Tags.Any(t => t.Name == x))
+            .Where(x => !this.Tags.Any(t => t.Name == x))
             .Select(x => new Tag(x));
         this.Tags.AddRange(toAdd);
         return Task.CompletedTask;

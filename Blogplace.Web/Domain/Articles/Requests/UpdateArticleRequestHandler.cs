@@ -51,7 +51,7 @@ public class UpdateArticleRequestHandler(
             await tagsRepository.AddIfNotExists(request.Tags);
             var tagsIds = (await tagsRepository.Get(request.Tags)).Select(x => x.Id).ToList();
 
-            var tagsDeletedFromArticle = article.TagIds.Where(x => !tagsIds.Contains(x));
+            var tagsDeletedFromArticle = article.TagIds.Where(x => !tagsIds.Contains(x)).ToArray();
             article.TagIds = tagsIds;
 
             //todo

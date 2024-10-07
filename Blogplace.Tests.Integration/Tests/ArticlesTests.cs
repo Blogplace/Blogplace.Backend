@@ -1,8 +1,10 @@
 ﻿using Blogplace.Tests.Integration.Data;
 using Blogplace.Web.Domain.Articles;
 using Blogplace.Web.Domain.Articles.Requests;
+using Blogplace.Web.Infrastructure.Database;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -53,6 +55,7 @@ public class ArticlesTests : TestBase
         result.AuthorId.Should().Be(StandardUserId);
         result.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
+        result.Tags.Single().Should().Be(TagsRepositoryFake.DefaultTag!.Id);
     }
     
     [Test]
@@ -109,10 +112,11 @@ public class ArticlesTests : TestBase
     public async Task Update_ArticleShouldBeUpdated()
     {
         //Arrange
+        var tagsRepository = (TagsRepositoryFake)this._factory.Services.GetRequiredService<ITagsRepository>();
         var client = this._factory.CreateClient_Standard();
         var articleId = await this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT");
 
-        var updateRequest = new UpdateArticleRequest(articleId, "NEW_TITLE", "NEW_CONTENT");
+        var updateRequest = new UpdateArticleRequest(articleId, "NEW_TITLE", "NEW_CONTENT", ["updated_tag"]);
 
         //Act
         var updateResponse = await client.PostAsync($"{this.urlBaseV1}/Articles/Update", updateRequest);
@@ -128,6 +132,9 @@ public class ArticlesTests : TestBase
         result.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
         result.UpdatedAt.Should().NotBe(result.CreatedAt);
+
+        var newTag = tagsRepository.Tags.Single(x => x.Name == "updated_tag");
+        result.Tags.Single().Should().Be(newTag.Id);
     }
 
     [Test]

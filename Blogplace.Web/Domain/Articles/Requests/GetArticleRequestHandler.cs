@@ -17,7 +17,7 @@ public class GetArticleRequestHandler(
     public async Task<GetArticleResponse> Handle(GetArticleRequest request, CancellationToken cancellationToken)
     {
         var result = await repository.Get(request.Id);
-        var dto = new ArticleDto(result.Id, result.Title, result.Content, result.Views, result.CreatedAt, result.UpdatedAt, result.AuthorId);
+        var dto = new ArticleDto(result.Id, result.Title, result.Content, result.Views, result.TagIds, result.CreatedAt, result.UpdatedAt, result.AuthorId);
 
         var viewId = Guid.NewGuid();
         var viewData = new ArticleViewData(sessionStorage.Ip!, DateTime.UtcNow, result.Id, sessionStorage.UserAgent!);
