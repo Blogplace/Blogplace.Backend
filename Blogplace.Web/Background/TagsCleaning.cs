@@ -27,7 +27,11 @@ public class TagsCleaningService(
 {
     private const string TAGS_TO_CHECK = "TagsToCheck";
     private const string LAST_TAGS_CLEANING = "LastTagsCleaning";
+
+    //todo options
     private const int SECONDS_BETWEEN_CLEANING = 15;
+
+    public DateTime LastExecution { get; private set; }
 
     //todo improve data safety
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -43,6 +47,7 @@ public class TagsCleaningService(
             }
 
             cache.Set(TAGS_TO_CHECK, tagsToCheck);
+            this.LastExecution = DateTime.UtcNow;
         }
     }
 
