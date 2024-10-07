@@ -29,6 +29,7 @@ public class TagsCleaningService(
     private const string LAST_TAGS_CLEANING = "LastTagsCleaning";
     private const int SECONDS_BETWEEN_CLEANING = 15;
 
+    //todo improve data safety
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await foreach (var tagToCheck in channel.Subscribe(stoppingToken)) 
@@ -55,6 +56,14 @@ public class TagsCleaningService(
             return false;
         }
 
+        foreach (var tagToCheck in tagsToCheck)
+        {
+            var count = await articlesRepository.CountArticlesThatContainsTag(tagToCheck);
+            if (count == 0) 
+            {
+                await tagsRepository.Delete(tagToCheck);
+            }
+        }
 
         return true;
     }
