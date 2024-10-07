@@ -54,7 +54,7 @@ public class TagsCleaningService(
     private async Task<bool> TryCleaning(HashSet<Guid> tagsToCheck)
     {
         var now = DateTime.UtcNow;
-        var lastTime = await cache.GetOrCreateAsync(LAST_TAGS_CLEANING, x => Task.FromResult(now));
+        var lastTime = await cache.GetOrCreateAsync(LAST_TAGS_CLEANING, x => Task.FromResult(default(DateTime)));
         var secondsBetween = (now - lastTime).TotalSeconds;
         if (secondsBetween < SECONDS_BETWEEN_CLEANING)
         {
@@ -70,6 +70,7 @@ public class TagsCleaningService(
             }
         }
 
+        cache.Set(LAST_TAGS_CLEANING, DateTime.UtcNow);
         return true;
     }
 }

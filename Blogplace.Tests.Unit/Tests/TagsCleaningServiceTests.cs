@@ -20,7 +20,8 @@ public class TagsCleaningServiceTests
     private readonly TagsCleaningChannel _channel = new();
     private TagsCleaningService? _service;
 
-    private readonly CancellationToken _ct = new ();
+    private CancellationTokenSource _cts;
+    private CancellationToken _ct;
 
     [SetUp]
     public void SetUp()
@@ -32,6 +33,9 @@ public class TagsCleaningServiceTests
             .AddMemoryCache()
             .BuildServiceProvider()
             .GetService<IMemoryCache>()!;
+
+        this._cts = new CancellationTokenSource();
+        this._ct = this._cts.Token;
     }
 
     [TearDown]
@@ -39,6 +43,7 @@ public class TagsCleaningServiceTests
     {
         this._service!.StopAsync(this._ct).Wait();
         this._service!.Dispose();
+        this._cts.Dispose();
     }
 
     [Test]
@@ -46,6 +51,7 @@ public class TagsCleaningServiceTests
     public async Task ShouldAddTagToWhitelist_AndNotDelete_IfTimeIsShort()
     {
         await this.SetupService();
+        this.SetLastCleaning(DateTime.UtcNow);
 
         var id = Guid.NewGuid();
         await this._channel.Publish(id);
@@ -55,6 +61,8 @@ public class TagsCleaningServiceTests
 
         this._articlesRepositoryMock.Verify(x => x.CountArticlesThatContainsTag(id), Times.Never);
         this._tagsRepositoryMock.Verify(x => x.Delete(id), Times.Never);
+
+        this.GetLastCleaning().Should().BeBefore(DateTime.UtcNow.AddSeconds(-3));
     }
 
     [Test]
@@ -67,8 +75,11 @@ public class TagsCleaningServiceTests
         var id = Guid.NewGuid();
         await this._channel.Publish(id);
         await this.WaitForService();
+
         var tagsToCheck = this.GetTagsToCheck();
         tagsToCheck.Should().BeEmpty();
+
+        this.GetLastCleaning().Should().BeAfter(DateTime.UtcNow.AddSeconds(-3));
     }
 
     [Test]
@@ -86,6 +97,8 @@ public class TagsCleaningServiceTests
 
         this._articlesRepositoryMock.Verify(x => x.CountArticlesThatContainsTag(id), Times.Once());
         this._tagsRepositoryMock.Verify(x => x.Delete(id), Times.Once());
+
+        this.GetLastCleaning().Should().BeAfter(DateTime.UtcNow.AddSeconds(-3));
     }
 
     [Test]
@@ -103,6 +116,33 @@ public class TagsCleaningServiceTests
 
         this._articlesRepositoryMock.Verify(x => x.CountArticlesThatContainsTag(id), Times.Once());
         this._tagsRepositoryMock.Verify(x => x.Delete(id), Times.Never);
+
+        this.GetLastCleaning().Should().BeAfter(DateTime.UtcNow.AddSeconds(-3));
+    }
+
+    [TestCase(true, false)]
+    [TestCase(false, true)]
+    [CancelAfter(3_000)]
+    public async Task ShouldStopOnCancellation(bool cancel, bool lastExecutionChanged)
+    {
+        await this.SetupService();
+        if (cancel)
+        {
+            this._cts.Cancel();
+        }
+
+        var id = Guid.NewGuid();
+        await this._channel.Publish(id);
+        Thread.Sleep(500);
+
+        if (lastExecutionChanged)
+        {
+            this._service!.LastExecution.Should().NotBe(default);
+        }
+        else
+        {
+            this._service!.LastExecution.Should().Be(default);
+        }
     }
 
     private Task SetupService()
