@@ -1,4 +1,5 @@
 ﻿using Blogplace.Web.Auth;
+using Blogplace.Web.Background;
 using Blogplace.Web.Commons.Logging;
 using Blogplace.Web.Exceptions;
 using Blogplace.Web.Infrastructure.Database;
@@ -14,7 +15,8 @@ public class UpdateArticleRequestHandler(
     IUsersRepository usersRepository,
     ITagsRepository tagsRepository,
     IPermissionsChecker permissionsChecker,
-    IEventLogger logger
+    IEventLogger logger,
+    ITagsCleaningChannel tagsCleaningChannel
 ) : IRequestHandler<UpdateArticleRequest>
 {
     public async Task Handle(UpdateArticleRequest request, CancellationToken cancellationToken)
@@ -54,8 +56,11 @@ public class UpdateArticleRequestHandler(
             var tagsDeletedFromArticle = article.TagIds.Where(x => !tagsIds.Contains(x)).ToArray();
             article.TagIds = tagsIds;
 
-            //todo
-            //enqueue task - delete tag if not exist in any article
+            foreach (var tagToCheck in tagsDeletedFromArticle)
+            {
+                //todo do only if repository.Update() succeed
+                await tagsCleaningChannel.Publish(tagToCheck);
+            }
 
             isChanged = true;
         }
