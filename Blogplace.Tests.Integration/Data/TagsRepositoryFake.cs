@@ -7,11 +7,11 @@ public class TagsRepositoryFake : ITagsRepository
 {
     public static Tag? DefaultTag { get; set; }
 
-    public List<Tag> Tags { get; }
+    public List<Tag> Tags { get; private set; } = [];
 
     private static readonly object obj = new();
 
-    public TagsRepositoryFake()
+    public void Init()
     {
         lock (obj)
         {

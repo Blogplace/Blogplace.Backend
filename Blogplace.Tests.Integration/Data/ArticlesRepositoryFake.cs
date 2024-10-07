@@ -7,11 +7,11 @@ public class ArticlesRepositoryFake : IArticlesRepository
 {
     public static Article? NonePermissionsUserArticle { get; set; }
 
-    public List<Article> Articles { get; }
+    public List<Article> Articles { get; private set; } = [];
 
     private static readonly object obj = new();
 
-    public ArticlesRepositoryFake()
+    public void Init()
     {
         lock (obj)
         {
