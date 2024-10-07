@@ -1,4 +1,5 @@
 using Blogplace.Web.Auth;
+using Blogplace.Web.Background;
 using Blogplace.Web.Commons.Consts;
 using Blogplace.Web.Commons.Logging;
 using Blogplace.Web.Configuration;
@@ -151,6 +152,7 @@ public static class ServiceExtensions
     {
         services.AddSingleton<IArticlesRepository, ArticlesRepository>();
         services.AddSingleton<IUsersRepository, UsersRepository>();
+        services.AddSingleton<ITagsRepository, TagsRepository>();
 
         return services;
     }
@@ -159,6 +161,14 @@ public static class ServiceExtensions
     {
         services.AddOptions<EmailOptions>().Bind(config.GetSection("Email")).ValidateDataAnnotations();
         services.AddSingleton<IEmailSender, EmailSender>();
+
+        return services;
+    }
+
+    public static IServiceCollection SetupBackground(this IServiceCollection services)
+    {
+        services.AddSingleton<ITagsCleaningChannel, TagsCleaningChannel>();
+        services.AddHostedService<TagsCleaningService>();
 
         return services;
     }

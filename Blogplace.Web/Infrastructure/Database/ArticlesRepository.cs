@@ -10,6 +10,7 @@ public interface IArticlesRepository
     Task<Article> Get(Guid id);
     Task<IEnumerable<Article>> Search();
     Task Update(Article article);
+    Task<int> CountArticlesThatContainsTag(Guid tag);
 }
 
 [ExcludeFromCodeCoverage]
@@ -49,5 +50,11 @@ public class ArticlesRepository : IArticlesRepository
         var item = this._articles.Single(x => x.Id == id);
         this._articles.Remove(item);
         return Task.CompletedTask;
+    }
+
+    public Task<int> CountArticlesThatContainsTag(Guid tag)
+    {
+        var results = this._articles.Count(x => x.TagIds.Contains(tag));
+        return Task.FromResult(results!);
     }
 }

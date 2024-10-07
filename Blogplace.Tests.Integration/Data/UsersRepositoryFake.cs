@@ -5,18 +5,18 @@ using Microsoft.Extensions.Options;
 
 namespace Blogplace.Tests.Integration.Data;
 
-public class UsersRepositoryFake : IUsersRepository
+public class UsersRepositoryFake(IOptions<PermissionsOptions> permissionOptions) : IUsersRepository
 {
     //there could be more predefined "actors", like moderator, banned etc
     public static User? Standard { get; private set; }
     public static User? AnotherStandard { get; private set; }
     public static User? NonePermissions { get; private set; }
 
-    public List<User> Users { get; private set; }
+    public List<User> Users { get; private set; } = [];
 
     private static readonly object obj = new ();
 
-    public UsersRepositoryFake(IOptions<PermissionsOptions> permissionOptions)
+    public void Init()
     {
         var defaultPermissions = permissionOptions.Value.GetDefault();
         lock(obj) 
