@@ -49,8 +49,14 @@ public class UpdateArticleRequestHandler(
         if(request.Tags != null)
         {
             await tagsRepository.AddIfNotExists(request.Tags);
-            var tags = await tagsRepository.Get(request.Tags);
-            article.TagIds = tags.Select(x => x.Id).ToList();
+            var tagsIds = (await tagsRepository.Get(request.Tags)).Select(x => x.Id).ToList();
+
+            var tagsDeletedFromArticle = article.TagIds.Where(x => !tagsIds.Contains(x));
+            article.TagIds = tagsIds;
+
+            //todo
+            //enqueue task - delete tag if not exist in any article
+
             isChanged = true;
         }
 
