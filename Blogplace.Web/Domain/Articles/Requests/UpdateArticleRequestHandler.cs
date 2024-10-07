@@ -6,12 +6,13 @@ using MediatR;
 
 namespace Blogplace.Web.Domain.Articles.Requests;
 
-public record UpdateArticleRequest(Guid Id, string? NewTitle = null, string? NewContent = null) : IRequest;
+public record UpdateArticleRequest(Guid Id, string? NewTitle = null, string? NewContent = null, string[]? Tags = null) : IRequest;
 
 public class UpdateArticleRequestHandler(
     ISessionStorage sessionStorage,
     IArticlesRepository repository,
     IUsersRepository usersRepository,
+    ITagsRepository tagsRepository,
     IPermissionsChecker permissionsChecker,
     IEventLogger logger
 ) : IRequestHandler<UpdateArticleRequest>
@@ -42,6 +43,14 @@ public class UpdateArticleRequestHandler(
         if (request.NewContent != null)
         {
             article.Content = request.NewContent;
+            isChanged = true;
+        }
+
+        if(request.Tags != null)
+        {
+            await tagsRepository.AddIfNotExists(request.Tags);
+            var tags = await tagsRepository.Get(request.Tags);
+            article.TagIds = tags.Select(x => x.Id).ToList();
             isChanged = true;
         }
 
