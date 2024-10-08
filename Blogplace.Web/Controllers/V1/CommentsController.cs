@@ -8,4 +8,7 @@ public sealed class CommentsController(IMediator mediator) : V1ControllerBase
 {
     [HttpPost]
     public Task<CreateCommentResponse> Create(CreateCommentRequest request) => mediator.Send(request);
+
+    [HttpPost]
+    public Task Delete(DeleteCommentRequest request) => mediator.Send(request);
 }

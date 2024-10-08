@@ -17,19 +17,27 @@ public class CommentsTests : TestBase
     public void TearDown() => this._factory?.Dispose();
 
     [Test]
-    [TestCase("/Comments/Create")]
-    public async Task Comments_AnonymousShouldReturnUnauthorized(string url)
+    public async Task Comments_AnonymousShouldReturnUnauthorized()
     {
         //Arrange
         var client = this._factory.CreateClient_Anonymous();
-        var request = new CreateCommentRequest(ArticlesRepositoryFake.NonePermissionsUserArticle!.Id,
+        var requests = new Dictionary<string, object>();
+        var createRequest = new CreateCommentRequest(ArticlesRepositoryFake.StandardUserArticle!.Id,
             "TEST_COMMENT_CONTENT");
+        var deleteRequest =
+            new DeleteCommentRequest(CommentsRepositoryFake.StandardUserCommentOnStandardUserArticle!.Id);
 
-        //Act
-        var response = await client.PostAsync($"{this.urlBaseV1}{url}", request);
+        requests["/Comments/Create"] = createRequest;
+        requests["/Comments/Delete"] = deleteRequest;
 
-        //Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        foreach (var request in requests)
+        {
+            //Act
+            var response = await client.PostAsync($"{this.urlBaseV1}{request.Key}", request.Value);
+
+            //Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
     }
 
     [Test]
@@ -46,5 +54,19 @@ public class CommentsTests : TestBase
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         // TODO: check if the comment actually exist in the repository
+    }
+
+    [Test]
+    public async Task Delete_CommentShouldBeDeleted()
+    {
+        //Arrange
+        var client = this._factory.CreateClient_Standard();
+        var request = new DeleteCommentRequest(CommentsRepositoryFake.StandardUserCommentOnStandardUserArticle!.Id);
+
+        // Act
+        var response = await client.PostAsync($"{this.urlBaseV1}/Comments/Delete", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }

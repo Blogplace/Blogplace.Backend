@@ -23,6 +23,7 @@ public abstract class TestBase
             {
                 x.AddSingleton<IUsersRepository, UsersRepositoryFake>();
                 x.AddSingleton<IArticlesRepository, ArticlesRepositoryFake>();
+                x.AddSingleton<ICommentsRepository, CommentsRepositoryFake>();
                 registerServices?.Invoke(x); 
             }));
 
@@ -35,6 +36,7 @@ public abstract class TestBase
     {
         services.GetService<IUsersRepository>();
         services.GetService<IArticlesRepository>();
+        services.GetService<ICommentsRepository>();
     }
 }
 
