@@ -1,4 +1,5 @@
 ﻿using Blogplace.Web.Auth;
+using Blogplace.Web.Background;
 using Blogplace.Web.Commons.Logging;
 using Blogplace.Web.Exceptions;
 using Blogplace.Web.Infrastructure.Database;
@@ -6,14 +7,16 @@ using MediatR;
 
 namespace Blogplace.Web.Domain.Articles.Requests;
 
-public record UpdateArticleRequest(Guid Id, string? NewTitle = null, string? NewContent = null) : IRequest;
+public record UpdateArticleRequest(Guid Id, string? NewTitle = null, string? NewContent = null, string[]? Tags = null) : IRequest;
 
 public class UpdateArticleRequestHandler(
     ISessionStorage sessionStorage,
     IArticlesRepository repository,
     IUsersRepository usersRepository,
+    ITagsRepository tagsRepository,
     IPermissionsChecker permissionsChecker,
-    IEventLogger logger
+    IEventLogger logger,
+    ITagsCleaningChannel tagsCleaningChannel
 ) : IRequestHandler<UpdateArticleRequest>
 {
     public async Task Handle(UpdateArticleRequest request, CancellationToken cancellationToken)
@@ -42,6 +45,23 @@ public class UpdateArticleRequestHandler(
         if (request.NewContent != null)
         {
             article.Content = request.NewContent;
+            isChanged = true;
+        }
+
+        if(request.Tags != null)
+        {
+            await tagsRepository.AddIfNotExists(request.Tags);
+            var tagsIds = (await tagsRepository.Get(request.Tags)).Select(x => x.Id).ToList();
+
+            var tagsDeletedFromArticle = article.TagIds.Where(x => !tagsIds.Contains(x)).ToArray();
+            article.TagIds = tagsIds;
+
+            foreach (var tagToCheck in tagsDeletedFromArticle)
+            {
+                //todo do only if repository.Update() succeed
+                await tagsCleaningChannel.Publish(tagToCheck);
+            }
+
             isChanged = true;
         }
 

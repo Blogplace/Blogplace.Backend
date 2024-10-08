@@ -10,7 +10,7 @@ public class SearchArticlesRequestHandler(IArticlesRepository repository) : IReq
     public async Task<SearchArticlesResponse> Handle(SearchArticlesRequest request, CancellationToken cancellationToken)
     {
         var results = await repository.Search();
-        var dtos = results.Select(x => new ArticleSmallDto(x.Id, x.Title, x.Views, x.CreatedAt, x.UpdatedAt, x.AuthorId));
+        var dtos = results.Select(x => new ArticleSmallDto(x.Id, x.Title, x.Views, x.TagIds, x.CreatedAt, x.UpdatedAt, x.AuthorId));
         return new SearchArticlesResponse(dtos);
     }
 }

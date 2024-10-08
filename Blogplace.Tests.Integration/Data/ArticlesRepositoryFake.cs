@@ -8,18 +8,18 @@ public class ArticlesRepositoryFake : IArticlesRepository
     public static Article? StandardUserArticle { get; set; }
     public static Article? NonePermissionsUserArticle { get; set; }
 
-    public List<Article> Articles { get; }
+    public List<Article> Articles { get; private set; } = [];
 
     private static readonly object obj = new();
 
-    public ArticlesRepositoryFake()
+    public void Init()
     {
         lock (obj)
         {
             StandardUserArticle ??=
                 new Article("TEST_TITLE", "TEST_CONTENT", UsersRepositoryFake.Standard!.Id);
             NonePermissionsUserArticle ??=
-                new Article("TEST_TITLE", "TEST_CONTENT", UsersRepositoryFake.NonePermissions!.Id);
+                new Article("TEST_TITLE", "TEST_CONTENT", UsersRepositoryFake.NonePermissions!.Id, [TagsRepositoryFake.DefaultTag!]);
         }
 
         this.Articles =
@@ -61,5 +61,11 @@ public class ArticlesRepositoryFake : IArticlesRepository
         var item = this.Articles.Single(x => x.Id == id);
         this.Articles.Remove(item);
         return Task.CompletedTask;
+    }
+
+    public Task<int> CountArticlesThatContainsTag(Guid tag)
+    {
+        var results = this.Articles.Count(x => x.TagIds.Contains(tag));
+        return Task.FromResult(results!);
     }
 }

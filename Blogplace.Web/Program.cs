@@ -17,7 +17,8 @@ try
         .SetupAuth(builder.Configuration)
         .SetupMediatr()
         .SetupRepositories()
-        .SetupEmail(builder.Configuration);
+        .SetupEmail(builder.Configuration)
+        .SetupBackground();
 
     var app = builder.Build();
     if (app.Environment.IsDevelopment())

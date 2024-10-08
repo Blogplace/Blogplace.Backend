@@ -2,11 +2,7 @@
 
 namespace Blogplace.Web.Exceptions;
 
-public class UserNotAuthorizedException : CustomException
+public class UserNotAuthorizedException(string? message) : CustomException(message)
 {
-    public UserNotAuthorizedException(string? message) : base(message)
-    {
-    }
-
     public override HttpStatusCode GetStatusCode() => HttpStatusCode.Unauthorized;
 }

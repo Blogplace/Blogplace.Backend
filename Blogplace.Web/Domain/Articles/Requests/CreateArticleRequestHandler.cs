@@ -7,10 +7,11 @@ using MediatR;
 namespace Blogplace.Web.Domain.Articles.Requests;
 
 public record CreateArticleResponse(Guid Id);
-public record CreateArticleRequest(string Title, string Content) : IRequest<CreateArticleResponse>;
+public record CreateArticleRequest(string Title, string Content, string[] Tags) : IRequest<CreateArticleResponse>;
 public class CreateArticleRequestHandler(
     ISessionStorage sessionStorage,
-    IArticlesRepository repository,
+    IArticlesRepository articlesRepository,
+    ITagsRepository tagsRepository,
     IUsersRepository usersRepository,
     IPermissionsChecker permissionsChecker,
     IEventLogger logger
@@ -26,8 +27,11 @@ public class CreateArticleRequestHandler(
             throw new UserPermissionDeniedException("No permission to create the article");
         }
 
-        var article = new Article(request.Title, request.Content, userId);
-        await repository.Add(article);
+        await tagsRepository.AddIfNotExists(request.Tags);
+        var tagsIds = await tagsRepository.Get(request.Tags);
+
+        var article = new Article(request.Title, request.Content, userId, tagsIds);
+        await articlesRepository.Add(article);
 
         logger.UserCreatedArticle(userId, article.Id);
         return new CreateArticleResponse(article.Id);
