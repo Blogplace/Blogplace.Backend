@@ -20,6 +20,10 @@ public sealed class CommentsController(IMediator mediator) : V1ControllerBase
     [HttpPost]
     public Task<SearchCommentsResponse> SearchByParent(SearchCommentsByParentRequest request) =>
         mediator.Send(request);
+
+    [HttpPost]
+    public Task Update(UpdateCommentRequest request) =>
+        mediator.Send(request);
     
     [HttpPost]
     public Task Delete(DeleteCommentRequest request) => mediator.Send(request);

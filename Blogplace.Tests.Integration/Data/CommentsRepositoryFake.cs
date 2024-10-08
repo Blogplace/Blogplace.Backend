@@ -51,7 +51,7 @@ public class CommentsRepositoryFake : ICommentsRepository
         return Task.FromResult(result);
     }
 
-    public Task Update(Guid id, Comment comment)
+    public Task Update(Comment comment)
     {
         var item = this.Comments.Single(x => x.Id == comment.Id);
         item.Content = comment.Content;

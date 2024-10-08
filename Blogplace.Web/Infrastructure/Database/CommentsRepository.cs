@@ -8,7 +8,7 @@ public interface ICommentsRepository
     Task<Comment> Get(Guid id);
     Task<IEnumerable<Comment>> GetByArticle(Guid articleId);
     Task<IEnumerable<Comment>> GetByParent(Guid parentId);
-    Task Update(Guid id, Comment comment);
+    Task Update(Comment comment);
     Task Delete(Guid id);
 }
 
@@ -40,7 +40,7 @@ public class CommentsRepository : ICommentsRepository
         return Task.FromResult(result);
     }
 
-    public Task Update(Guid id, Comment comment)
+    public Task Update(Comment comment)
     {
         var item = this._comments.Single(x => x.Id == comment.Id);
         item.Content = comment.Content;
