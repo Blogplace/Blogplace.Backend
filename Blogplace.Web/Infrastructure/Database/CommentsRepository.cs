@@ -1,4 +1,5 @@
 ﻿using Blogplace.Web.Domain.Comments;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Blogplace.Web.Infrastructure.Database;
 
@@ -12,6 +13,7 @@ public interface ICommentsRepository
     Task Delete(Guid id);
 }
 
+[ExcludeFromCodeCoverage]
 public class CommentsRepository : ICommentsRepository
 {
     private readonly List<Comment> _comments = [];
