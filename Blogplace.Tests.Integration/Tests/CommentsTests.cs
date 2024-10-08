@@ -24,12 +24,19 @@ public class CommentsTests : TestBase
         //Arrange
         var client = this._factory.CreateClient_Anonymous();
         var requests = new Dictionary<string, object>();
-        var createRequest = new CreateCommentRequest(ArticlesRepositoryFake.StandardUserArticle!.Id,
-            "TEST_COMMENT_CONTENT");
+        var createRequest = new CreateCommentRequest(
+            ArticlesRepositoryFake.StandardUserArticle!.Id,
+            "TEST_COMMENT_CONTENT"
+        );
+        var updateRequest = new UpdateCommentRequest(
+            CommentsRepositoryFake.StandardUserCommentOnStandardUserArticle!.Id,
+            "NEW_CONTENT"
+        );
         var deleteRequest =
             new DeleteCommentRequest(CommentsRepositoryFake.StandardUserCommentOnStandardUserArticle!.Id);
 
         requests["/Comments/Create"] = createRequest;
+        requests["/Comments/Update"] = updateRequest;
         requests["/Comments/Delete"] = deleteRequest;
 
         foreach (var request in requests)
@@ -47,8 +54,10 @@ public class CommentsTests : TestBase
     {
         //Arrange
         var client = this._factory.CreateClient_Standard();
-        var request = new CreateCommentRequest(ArticlesRepositoryFake.NonePermissionsUserArticle!.Id,
-            "TEST_COMMENT_CONTENT");
+        var request = new CreateCommentRequest(
+            ArticlesRepositoryFake.StandardUserArticle!.Id,
+            "TEST_COMMENT_CONTENT"
+        );
 
         //Act
         var response = await client.PostAsync($"{this.urlBaseV1}/Comments/Create", request);
@@ -57,21 +66,7 @@ public class CommentsTests : TestBase
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         // TODO: check if the comment actually exist in the repository
     }
-
-    [Test]
-    public async Task Delete_CommentShouldBeDeleted()
-    {
-        //Arrange
-        var client = this._factory.CreateClient_Standard();
-        var request = new DeleteCommentRequest(CommentsRepositoryFake.StandardUserCommentOnStandardUserArticle!.Id);
-
-        //Act
-        var response = await client.PostAsync($"{this.urlBaseV1}/Comments/Delete", request);
-
-        //Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-    }
-
+    
     [Test]
     public async Task SearchByArticle_CommentsShouldBeReturned()
     {
@@ -118,5 +113,59 @@ public class CommentsTests : TestBase
 
         comments.Should().NotBeEmpty();
         comments.Should().ContainSingle(x => x.ArticleId == articleId && x.Content == commentContent);
+    }
+
+    [Test]
+    public async Task Update_CommentShouldBeUpdated()
+    {
+        //Arrange
+        var client = this._factory.CreateClient_Standard();
+        var commentId = await this.CreateComment(
+            client,
+            ArticlesRepositoryFake.StandardUserArticle!.Id,
+            "TEST_CONTENT"
+        );
+
+        var newContent = "UPDATED_CONTENT";
+        var request = new UpdateCommentRequest(
+            commentId,
+            newContent
+        );
+
+        //Act
+        var response = await client.PostAsync($"{this.urlBaseV1}/Comments/Update", request);
+
+        //Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // TODO: Check if the comment was updated in the repository
+    }
+
+    [Test]
+    public async Task Delete_CommentShouldBeDeleted()
+    {
+        //Arrange
+        var client = this._factory.CreateClient_Standard();
+        var commentId = await this.CreateComment(
+            client,
+            ArticlesRepositoryFake.StandardUserArticle!.Id,
+            "TEST_COMMENT_CONTENT"
+        );
+        var request = new DeleteCommentRequest(commentId);
+
+        //Act
+        var response = await client.PostAsync($"{this.urlBaseV1}/Comments/Delete", request);
+
+        //Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // TODO: Check if the comment doesn't exist in the repository
+    }
+
+    private async Task<Guid> CreateComment(ApiClient client, Guid articleId, string content, Guid? parentId = null)
+    {
+        var request = new CreateCommentRequest(articleId, content);
+        var response = await client.PostAsync($"{this.urlBaseV1}/Comments/Create", request);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var commentId = (await response.Content.ReadFromJsonAsync<CreateCommentResponse>())!.Id;
+        return commentId;
     }
 }

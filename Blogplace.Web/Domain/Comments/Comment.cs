@@ -4,7 +4,7 @@
 // TODO: Add Upvotes system
 public class Comment(Guid articleId, Guid authorId, string content, Guid? parentCommentId)
 {
-    public Guid Id { get; } = new();
+    public Guid Id { get; } = Guid.NewGuid();
     public Guid ArticleId { get; } = articleId;
     public Guid? ParentId { get; } = parentCommentId;
     public Guid AuthorId { get; } = authorId;
