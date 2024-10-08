@@ -30,7 +30,6 @@ public class CommentsTests : TestBase
 
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-        // TODO: check if the comment actually exist in the repository
     }
 
     [Test]
@@ -46,5 +45,6 @@ public class CommentsTests : TestBase
 
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // TODO: check if the comment actually exist in the repository
     }
 }
