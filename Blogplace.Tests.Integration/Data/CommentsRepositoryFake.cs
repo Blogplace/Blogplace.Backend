@@ -7,11 +7,11 @@ public class CommentsRepositoryFake : ICommentsRepository
 {
     public static Comment? StandardUserCommentOnStandardUserArticle { get; set; }
 
-    public List<Comment> Comments { get; }
+    public List<Comment> Comments { get; private set; }
 
     private static readonly object obj = new();
 
-    public CommentsRepositoryFake()
+    public void Init()
     {
         lock (obj)
         {
@@ -25,7 +25,6 @@ public class CommentsRepositoryFake : ICommentsRepository
             StandardUserCommentOnStandardUserArticle
         ];
     }
-
 
     public Task Add(Comment comment)
     {

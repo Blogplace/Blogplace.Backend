@@ -17,9 +17,11 @@ public class ArticlesRepositoryFake : IArticlesRepository
         lock (obj)
         {
             StandardUserArticle ??=
-                new Article("TEST_TITLE", "TEST_CONTENT", UsersRepositoryFake.Standard!.Id);
+                new Article("TEST_TITLE", "TEST_CONTENT", UsersRepositoryFake.Standard!.Id,
+                    [TagsRepositoryFake.DefaultTag!]);
             NonePermissionsUserArticle ??=
-                new Article("TEST_TITLE", "TEST_CONTENT", UsersRepositoryFake.NonePermissions!.Id, [TagsRepositoryFake.DefaultTag!]);
+                new Article("TEST_TITLE", "TEST_CONTENT", UsersRepositoryFake.NonePermissions!.Id,
+                    [TagsRepositoryFake.DefaultTag!]);
         }
 
         this.Articles =
