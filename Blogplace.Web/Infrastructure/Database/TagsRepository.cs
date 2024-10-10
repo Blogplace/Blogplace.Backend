@@ -9,6 +9,7 @@ public interface ITagsRepository
     Task Add(Tag tag);
     Task Delete(Guid id);
     Task<Tag> Get(Guid id);
+    Task<IEnumerable<Tag>> Get(IEnumerable<Guid> ids);
     Task<IEnumerable<Tag>> Get(IEnumerable<string> names);
     public Task AddIfNotExists(IEnumerable<string> names);
     Task<IEnumerable<KeyValuePair<Tag, int>>> SearchTopTags(int limit, string? containsName);
@@ -29,6 +30,12 @@ public class TagsRepository(IArticlesRepository articlesRepository) : ITagsRepos
     public Task<Tag> Get(Guid id)
     {
         var result = this._tags.Single(x => x.Id == id);
+        return Task.FromResult(result!);
+    }
+
+    public Task<IEnumerable<Tag>> Get(IEnumerable<Guid> ids)
+    {
+        var result = ids.Select(x => this._tags.First(t => t.Id == x));
         return Task.FromResult(result!);
     }
 

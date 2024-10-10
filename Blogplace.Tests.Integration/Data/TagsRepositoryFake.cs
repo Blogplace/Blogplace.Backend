@@ -36,6 +36,12 @@ public class TagsRepositoryFake(IArticlesRepository articlesRepository) : ITagsR
         return Task.FromResult(result!);
     }
 
+    public Task<IEnumerable<Tag>> Get(IEnumerable<Guid> ids)
+    {
+        var result = ids.Select(x => this.Tags.First(t => t.Id == x));
+        return Task.FromResult(result!);
+    }
+
     public Task<IEnumerable<Tag>> Get(IEnumerable<string> names)
     {
         var result = names.Select(x => this.Tags.First(t => t.Name == x));

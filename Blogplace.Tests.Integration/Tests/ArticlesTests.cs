@@ -95,6 +95,35 @@ public class ArticlesTests : TestBase
     }
 
     [Test]
+    public async Task Search_ShouldReturnArticleWithTag()
+    {
+        //Arrange
+        var tagToSearch = "search";
+        var titleToSearch = Guid.NewGuid().ToString();
+        var client = this._factory.CreateClient_Standard();
+
+        Task.WaitAll(
+        [
+            this.CreateArticle(client, titleToSearch, "TEST_CONTENT", [tagToSearch, "a", "b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["a", "b", "c"]),
+        ]);
+
+        var tag = (await this.SearchTags(client, tagToSearch)).Single();
+        tag.Count.Should().Be(1);
+
+        var request = new SearchArticlesRequest(tag.Id);
+        var anonymousClient = this._factory.CreateClient_Anonymous();
+
+        //Act
+        var response = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/Search", request);
+
+        //Assert
+        var result = (await response.Content.ReadFromJsonAsync<SearchArticlesResponse>())!.Articles.ToArray();
+        result.Should().HaveCount(1);
+        result.Should().ContainSingle(x => x.Title.Equals(titleToSearch));
+    }
+
+    [Test]
     public async Task Update_AnonymousReturnsUnauthorized()
     {
         //Arrange
@@ -311,9 +340,10 @@ public class ArticlesTests : TestBase
             this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["c"])
         ]);
         var request = new SearchTagsRequest(null);
+        var anonymousClient = this._factory.CreateClient_Anonymous();
 
         //Act
-        var response = await client.PostAsync($"{this.urlBaseV1}/Articles/SearchTags", request);
+        var response = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/SearchTags", request);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         //Assert
@@ -342,5 +372,14 @@ public class ArticlesTests : TestBase
 
         var result = (await getResponse.Content.ReadFromJsonAsync<GetArticleResponse>())!.Article;
         return result;
+    }
+
+    private async Task<IEnumerable<TagCount>> SearchTags(ApiClient client, string? containsName = null)
+    {
+        var request = new SearchTagsRequest(containsName);
+        var response = await client.PostAsync($"{this.urlBaseV1}/Articles/SearchTags", request);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        return (await response.Content.ReadFromJsonAsync<SearchTagsResponse>())!.TagCounts;
     }
 }
