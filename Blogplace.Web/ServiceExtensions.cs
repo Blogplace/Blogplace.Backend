@@ -12,7 +12,6 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using ILogger = Serilog.ILogger;
 
 namespace Blogplace.Web;
 
@@ -28,7 +27,7 @@ public static class ServiceExtensions
 
         Log.Logger = logger;
         builder.Logging.AddSerilog(logger);
-        builder.Services.AddSingleton<ILogger>(logger);
+        builder.Services.AddSingleton<Serilog.ILogger>(logger);
         builder.Services.AddSingleton<IEventLogger, EventLogger>();
 
         return builder;

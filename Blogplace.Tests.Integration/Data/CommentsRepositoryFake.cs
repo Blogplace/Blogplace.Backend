@@ -7,7 +7,7 @@ public class CommentsRepositoryFake : ICommentsRepository
 {
     public static Comment? StandardUserCommentOnStandardUserArticle { get; set; }
 
-    public List<Comment> Comments { get; private set; }
+    public List<Comment> Comments { get; private set; } = [];
 
     private static readonly object obj = new();
 

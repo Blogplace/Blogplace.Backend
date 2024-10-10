@@ -50,7 +50,7 @@ public class EventLogger(ILogger logger) : IEventLogger
         => this.Info(nameof(this.UserCreatedComment), new { UserId = userId, CommentId = commentId });
 
     public void UserUpdatedComment(Guid userId, Guid commentId)
-        => this.Info(nameof(this.UserCreatedComment), new { UserId = userId, CommentId = commentId });
+        => this.Info(nameof(this.UserUpdatedComment), new { UserId = userId, CommentId = commentId });
 
     public void UserDeletedComment(Guid userId, Guid commentId)
         => this.Info(nameof(this.UserDeletedComment), new { UserId = userId, CommentId = commentId });
