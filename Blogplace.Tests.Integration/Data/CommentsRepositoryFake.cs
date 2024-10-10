@@ -5,7 +5,7 @@ namespace Blogplace.Tests.Integration.Data;
 
 public class CommentsRepositoryFake : ICommentsRepository
 {
-    public static Comment? StandardUserCommentOnStandardUserArticle { get; set; }
+    public static Comment? StdUserCommentOnStdUserArticle { get; set; }
 
     public List<Comment> Comments { get; private set; } = [];
 
@@ -15,14 +15,14 @@ public class CommentsRepositoryFake : ICommentsRepository
     {
         lock (obj)
         {
-            StandardUserCommentOnStandardUserArticle ??=
+            StdUserCommentOnStdUserArticle ??=
                 new Comment(ArticlesRepositoryFake.StandardUserArticle!.Id, UsersRepositoryFake.Standard!.Id,
                     "TEST_COMMENT_CONTENT", null);
         }
 
         this.Comments =
         [
-            StandardUserCommentOnStandardUserArticle
+            StdUserCommentOnStdUserArticle
         ];
     }
 

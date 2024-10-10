@@ -29,11 +29,11 @@ public class CommentsTests : TestBase
             "TEST_COMMENT_CONTENT"
         );
         var updateRequest = new UpdateCommentRequest(
-            CommentsRepositoryFake.StandardUserCommentOnStandardUserArticle!.Id,
+            CommentsRepositoryFake.StdUserCommentOnStdUserArticle!.Id,
             "NEW_CONTENT"
         );
         var deleteRequest =
-            new DeleteCommentRequest(CommentsRepositoryFake.StandardUserCommentOnStandardUserArticle!.Id);
+            new DeleteCommentRequest(CommentsRepositoryFake.StdUserCommentOnStdUserArticle!.Id);
 
         requests["/Comments/Create"] = createRequest;
         requests["/Comments/Update"] = updateRequest;
@@ -84,7 +84,7 @@ public class CommentsTests : TestBase
         comments.Should().NotBeEmpty();
         comments.Should().ContainSingle(x =>
             x.ArticleId == ArticlesRepositoryFake.StandardUserArticle!.Id &&
-            x.Content == CommentsRepositoryFake.StandardUserCommentOnStandardUserArticle!.Content
+            x.Content == CommentsRepositoryFake.StdUserCommentOnStdUserArticle!.Content
         );
     }
 
@@ -94,7 +94,7 @@ public class CommentsTests : TestBase
         //Arrange
         var client = this._factory.CreateClient_Standard();
         var articleId = ArticlesRepositoryFake.StandardUserArticle!.Id;
-        var parentCommentId = CommentsRepositoryFake.StandardUserCommentOnStandardUserArticle!.Id;
+        var parentCommentId = CommentsRepositoryFake.StdUserCommentOnStdUserArticle!.Id;
 
         var commentContent = "CHILD_COMMENT_CONTENT";
         var createChildRequest = new CreateCommentRequest(articleId, commentContent, parentCommentId);
@@ -102,7 +102,7 @@ public class CommentsTests : TestBase
         createChildResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var request =
-            new SearchCommentsByParentRequest(CommentsRepositoryFake.StandardUserCommentOnStandardUserArticle!.Id);
+            new SearchCommentsByParentRequest(CommentsRepositoryFake.StdUserCommentOnStdUserArticle!.Id);
 
         //Act
         var response = await client.PostAsync($"{this.urlBaseV1}/Comments/SearchByParent", request);
