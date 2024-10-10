@@ -30,5 +30,5 @@ public sealed class ArticlesController(IMediator mediator) : V1ControllerBase
 
     [AllowAnonymous]
     [HttpPost]
-    public Task SearchTags()
+    public Task<SearchTagsResponse> SearchTags(SearchTagsRequest request) => mediator.Send(request);
 }

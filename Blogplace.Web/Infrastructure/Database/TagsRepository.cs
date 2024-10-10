@@ -11,7 +11,7 @@ public interface ITagsRepository
     Task<Tag> Get(Guid id);
     Task<IEnumerable<Tag>> Get(IEnumerable<string> names);
     public Task AddIfNotExists(IEnumerable<string> names);
-    Task<IEnumerable<KeyValuePair<Tag, int>>> SearchTopTags(string? containsName);
+    Task<IEnumerable<KeyValuePair<Tag, int>>> SearchTopTags(int limit, string? containsName);
 }
 
 [ExcludeFromCodeCoverage]
@@ -53,8 +53,16 @@ public class TagsRepository(IArticlesRepository articlesRepository) : ITagsRepos
         return Task.CompletedTask;
     }
 
-    public Task<IEnumerable<KeyValuePair<Tag, int>>> SearchTopTags(string? containsName)
+    public async Task<IEnumerable<KeyValuePair<Tag, int>>> SearchTopTags(int limit, string? containsName)
     {
         var matchedTags = containsName == null ? this._tags : this._tags.Where(x => x.Name.Contains(containsName));
+        var pairs = new List<KeyValuePair<Tag, int>>();
+        foreach (var tag in matchedTags)
+        {
+            var count = await articlesRepository.CountArticlesWithTag(tag.Id);
+            pairs.Add(new KeyValuePair<Tag, int>(tag, count));
+        }
+
+        return pairs.OrderByDescending(x => x.Value).Take(limit);
     }
 }

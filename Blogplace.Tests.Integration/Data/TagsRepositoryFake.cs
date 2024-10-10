@@ -3,7 +3,7 @@ using Blogplace.Web.Infrastructure.Database;
 
 namespace Blogplace.Tests.Integration.Data;
 
-public class TagsRepositoryFake : ITagsRepository
+public class TagsRepositoryFake(IArticlesRepository articlesRepository) : ITagsRepository
 {
     public static Tag? DefaultTag { get; set; }
 
@@ -56,5 +56,18 @@ public class TagsRepositoryFake : ITagsRepository
             .Select(x => new Tag(x));
         this.Tags.AddRange(toAdd);
         return Task.CompletedTask;
+    }
+
+    public async Task<IEnumerable<KeyValuePair<Tag, int>>> SearchTopTags(int limit, string? containsName)
+    {
+        var matchedTags = containsName == null ? this.Tags : this.Tags.Where(x => x.Name.Contains(containsName));
+        var pairs = new List<KeyValuePair<Tag, int>>();
+        foreach (var tag in matchedTags)
+        {
+            var count = await articlesRepository.CountArticlesWithTag(tag.Id);
+            pairs.Add(new KeyValuePair<Tag, int>(tag, count));
+        }
+
+        return pairs.OrderByDescending(x => x.Value).Take(limit);
     }
 }

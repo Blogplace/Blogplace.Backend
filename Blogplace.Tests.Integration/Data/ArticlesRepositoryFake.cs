@@ -37,9 +37,17 @@ public class ArticlesRepositoryFake : IArticlesRepository
         return Task.FromResult(result!);
     }
 
-    public Task<IEnumerable<Article>> Search()
+    public Task<IEnumerable<Article>> Search(int limit, Guid? tagId = null)
     {
-        var results = this.Articles.AsEnumerable();
+        var results = this.Articles.Where(x => 
+        {
+            if (tagId.HasValue && !x.TagIds.Contains(tagId.Value))
+            {
+                return false;
+            }
+
+            return true;
+        }).Take(limit);
         return Task.FromResult(results!);
     }
 
