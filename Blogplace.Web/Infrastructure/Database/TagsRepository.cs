@@ -18,6 +18,7 @@ public interface ITagsRepository
 public class TagsRepository(IArticlesRepository articlesRepository) : ITagsRepository
 {
     private readonly List<Tag> _tags = [];
+    private static readonly object obj = new();
 
     public Task Add(Tag tag)
     {
@@ -46,10 +47,13 @@ public class TagsRepository(IArticlesRepository articlesRepository) : ITagsRepos
 
     public Task AddIfNotExists(IEnumerable<string> names) 
     {
-        var toAdd = names
-            .Where(x => this._tags.Any(t => t.Name == x))
-            .Select(x => new Tag(x));
-        this._tags.AddRange(toAdd);
+        lock (obj)
+        {
+            var toAdd = names
+                .Where(x => !this._tags.Any(t => t.Name == x))
+                .Select(x => new Tag(x));
+            this._tags.AddRange(toAdd);
+        }
         return Task.CompletedTask;
     }
 

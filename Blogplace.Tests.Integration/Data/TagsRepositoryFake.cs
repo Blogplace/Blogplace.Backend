@@ -51,10 +51,14 @@ public class TagsRepositoryFake(IArticlesRepository articlesRepository) : ITagsR
 
     public Task AddIfNotExists(IEnumerable<string> names)
     {
-        var toAdd = names
-            .Where(x => !this.Tags.Any(t => t.Name == x))
-            .Select(x => new Tag(x));
-        this.Tags.AddRange(toAdd);
+        lock (obj) 
+        {
+            var toAdd = names
+                .Where(x => !this.Tags.Any(t => t.Name == x))
+                .Select(x => new Tag(x));
+            this.Tags.AddRange(toAdd);
+        }
+        
         return Task.CompletedTask;
     }
 

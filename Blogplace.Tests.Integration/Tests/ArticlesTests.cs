@@ -290,9 +290,43 @@ public class ArticlesTests : TestBase
         newArticle.Views.Should().Be(shouldIncrease ? 1 : 0);
     }
 
-    private async Task<Guid> CreateArticle(ApiClient client, string title, string content)
+    [Test]
+    public async Task SearchTags_ShouldReturnTagsQuantity()
     {
-        var request = new CreateArticleRequest(title, content, ["default"]);
+        //Arrange
+        var exceptedTagsCount = new Dictionary<string, int>()
+        {
+            { "a", 2 },
+            { "b", 4 },
+            { "c", 5 },
+        };
+
+        var client = this._factory.CreateClient_Standard();
+        Task.WaitAll(
+        [
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["a", "b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["a", "b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["c"])
+        ]);
+        var request = new SearchTagsRequest(null);
+
+        //Act
+        var response = await client.PostAsync($"{this.urlBaseV1}/Articles/SearchTags", request);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        //Assert
+        (await response.Content.ReadFromJsonAsync<SearchTagsResponse>())!
+            .TagCounts
+            .Where(x => exceptedTagsCount.ContainsKey(x.Name))
+            .ToDictionary(x => x.Name, x => x.Count)!
+            .Should().BeEquivalentTo(exceptedTagsCount);
+    }
+
+    private async Task<Guid> CreateArticle(ApiClient client, string title, string content, string[]? tags = null)
+    {
+        var request = new CreateArticleRequest(title, content, tags ?? ["default"]);
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", request);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var articleId = (await response.Content.ReadFromJsonAsync<CreateArticleResponse>())!.Id;

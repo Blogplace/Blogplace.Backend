@@ -1,7 +1,4 @@
-﻿using Blogplace.Web.Auth;
-using Blogplace.Web.Commons.Logging;
-using Blogplace.Web.Exceptions;
-using Blogplace.Web.Infrastructure.Database;
+﻿using Blogplace.Web.Infrastructure.Database;
 using MediatR;
 
 namespace Blogplace.Web.Domain.Articles.Requests;
