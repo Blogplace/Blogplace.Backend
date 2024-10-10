@@ -354,6 +354,34 @@ public class ArticlesTests : TestBase
             .Should().BeEquivalentTo(exceptedTagsCount);
     }
 
+    [Test]
+    public async Task GetTagsByIds_ShouldReturnTags()
+    {
+        //Arrange
+        var client = this._factory.CreateClient_Standard();
+        Task.WaitAll(
+        [
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["a", "b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["a", "b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["c"])
+        ]);
+        var anonymous = this._factory.CreateClient_Anonymous();
+        var tags = (await this.SearchTags(anonymous, null))
+            .Select(x => new TagDto(x.Id, x.Name))
+            .ToArray();
+        var request = new GetTagsByIdsRequest(tags.Select(x => x.Id));
+
+        //Act
+        var response = await anonymous.PostAsync($"{this.urlBaseV1}/Articles/GetTagsByIds", request);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        //Assert
+        var result = (await response.Content.ReadFromJsonAsync<GetTagsByIdsResponse>())!.Tags.ToArray();
+        result.Should().BeEquivalentTo(tags);
+    }
+
     private async Task<Guid> CreateArticle(ApiClient client, string title, string content, string[]? tags = null)
     {
         var request = new CreateArticleRequest(title, content, tags ?? ["default"]);
