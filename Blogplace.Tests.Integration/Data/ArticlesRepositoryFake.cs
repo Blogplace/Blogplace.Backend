@@ -59,7 +59,7 @@ public class ArticlesRepositoryFake : IArticlesRepository
         return Task.CompletedTask;
     }
 
-    public Task<int> CountArticlesThatContainsTag(Guid tag)
+    public Task<int> CountArticlesWithTag(Guid tag)
     {
         var results = this.Articles.Count(x => x.TagIds.Contains(tag));
         return Task.FromResult(results!);

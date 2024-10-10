@@ -11,10 +11,11 @@ public interface ITagsRepository
     Task<Tag> Get(Guid id);
     Task<IEnumerable<Tag>> Get(IEnumerable<string> names);
     public Task AddIfNotExists(IEnumerable<string> names);
+    Task<IEnumerable<KeyValuePair<Tag, int>>> SearchTopTags(string? containsName);
 }
 
 [ExcludeFromCodeCoverage]
-public class TagsRepository : ITagsRepository
+public class TagsRepository(IArticlesRepository articlesRepository) : ITagsRepository
 {
     private readonly List<Tag> _tags = [];
 
@@ -50,5 +51,10 @@ public class TagsRepository : ITagsRepository
             .Select(x => new Tag(x));
         this._tags.AddRange(toAdd);
         return Task.CompletedTask;
+    }
+
+    public Task<IEnumerable<KeyValuePair<Tag, int>>> SearchTopTags(string? containsName)
+    {
+        var matchedTags = containsName == null ? this._tags : this._tags.Where(x => x.Name.Contains(containsName));
     }
 }

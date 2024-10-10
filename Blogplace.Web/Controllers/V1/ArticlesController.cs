@@ -27,4 +27,8 @@ public sealed class ArticlesController(IMediator mediator) : V1ControllerBase
     [AllowAnonymous]
     [HttpPost]
     public Task View(ViewArticleRequest request) => mediator.Send(request);
+
+    [AllowAnonymous]
+    [HttpPost]
+    public Task SearchTags()
 }

@@ -63,7 +63,7 @@ public class TagsCleaningService(
 
         foreach (var tagToCheck in tagsToCheck)
         {
-            var count = await articlesRepository.CountArticlesThatContainsTag(tagToCheck);
+            var count = await articlesRepository.CountArticlesWithTag(tagToCheck);
             if (count == 0) 
             {
                 await tagsRepository.Delete(tagToCheck);
