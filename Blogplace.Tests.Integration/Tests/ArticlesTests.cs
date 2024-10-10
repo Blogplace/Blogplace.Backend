@@ -95,6 +95,35 @@ public class ArticlesTests : TestBase
     }
 
     [Test]
+    public async Task Search_ShouldReturnArticleWithTag()
+    {
+        //Arrange
+        var tagToSearch = "search";
+        var titleToSearch = Guid.NewGuid().ToString();
+        var client = this._factory.CreateClient_Standard();
+
+        Task.WaitAll(
+        [
+            this.CreateArticle(client, titleToSearch, "TEST_CONTENT", [tagToSearch, "a", "b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["a", "b", "c"]),
+        ]);
+
+        var tag = (await this.SearchTags(client, tagToSearch)).Single();
+        tag.Count.Should().Be(1);
+
+        var request = new SearchArticlesRequest(tag.Id);
+        var anonymousClient = this._factory.CreateClient_Anonymous();
+
+        //Act
+        var response = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/Search", request);
+
+        //Assert
+        var result = (await response.Content.ReadFromJsonAsync<SearchArticlesResponse>())!.Articles.ToArray();
+        result.Should().HaveCount(1);
+        result.Should().ContainSingle(x => x.Title.Equals(titleToSearch));
+    }
+
+    [Test]
     public async Task Update_AnonymousReturnsUnauthorized()
     {
         //Arrange
@@ -290,9 +319,72 @@ public class ArticlesTests : TestBase
         newArticle.Views.Should().Be(shouldIncrease ? 1 : 0);
     }
 
-    private async Task<Guid> CreateArticle(ApiClient client, string title, string content)
+    [Test]
+    public async Task SearchTags_ShouldReturnTagsQuantity()
     {
-        var request = new CreateArticleRequest(title, content, ["default"]);
+        //Arrange
+        var exceptedTagsCount = new Dictionary<string, int>()
+        {
+            { "a", 2 },
+            { "b", 4 },
+            { "c", 5 },
+        };
+
+        var client = this._factory.CreateClient_Standard();
+        Task.WaitAll(
+        [
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["a", "b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["a", "b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["c"])
+        ]);
+        var request = new SearchTagsRequest(null);
+        var anonymousClient = this._factory.CreateClient_Anonymous();
+
+        //Act
+        var response = await anonymousClient.PostAsync($"{this.urlBaseV1}/Articles/SearchTags", request);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        //Assert
+        (await response.Content.ReadFromJsonAsync<SearchTagsResponse>())!
+            .TagCounts
+            .Where(x => exceptedTagsCount.ContainsKey(x.Name))
+            .ToDictionary(x => x.Name, x => x.Count)!
+            .Should().BeEquivalentTo(exceptedTagsCount);
+    }
+
+    [Test]
+    public async Task GetTagsByIds_ShouldReturnTags()
+    {
+        //Arrange
+        var client = this._factory.CreateClient_Standard();
+        Task.WaitAll(
+        [
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["a", "b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["a", "b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["b", "c"]),
+            this.CreateArticle(client, "TEST_TITLE", "TEST_CONTENT", ["c"])
+        ]);
+        var anonymous = this._factory.CreateClient_Anonymous();
+        var tags = (await this.SearchTags(anonymous, null))
+            .Select(x => new TagDto(x.Id, x.Name))
+            .ToArray();
+        var request = new GetTagsByIdsRequest(tags.Select(x => x.Id));
+
+        //Act
+        var response = await anonymous.PostAsync($"{this.urlBaseV1}/Articles/GetTagsByIds", request);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        //Assert
+        var result = (await response.Content.ReadFromJsonAsync<GetTagsByIdsResponse>())!.Tags.ToArray();
+        result.Should().BeEquivalentTo(tags);
+    }
+
+    private async Task<Guid> CreateArticle(ApiClient client, string title, string content, string[]? tags = null)
+    {
+        var request = new CreateArticleRequest(title, content, tags ?? ["default"]);
         var response = await client.PostAsync($"{this.urlBaseV1}/Articles/Create", request);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var articleId = (await response.Content.ReadFromJsonAsync<CreateArticleResponse>())!.Id;
@@ -308,5 +400,14 @@ public class ArticlesTests : TestBase
 
         var result = (await getResponse.Content.ReadFromJsonAsync<GetArticleResponse>())!.Article;
         return result;
+    }
+
+    private async Task<IEnumerable<TagCount>> SearchTags(ApiClient client, string? containsName = null)
+    {
+        var request = new SearchTagsRequest(containsName);
+        var response = await client.PostAsync($"{this.urlBaseV1}/Articles/SearchTags", request);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        return (await response.Content.ReadFromJsonAsync<SearchTagsResponse>())!.TagCounts;
     }
 }

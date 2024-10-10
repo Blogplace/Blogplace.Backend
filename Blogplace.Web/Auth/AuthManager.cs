@@ -37,21 +37,21 @@ public sealed class AuthManager : IAuthManager
             jwtClaims.Add(new Claim(ClaimTypes.Role, role));
         }
 
-        if (!string.IsNullOrWhiteSpace(audience))
-        {
-            jwtClaims.Add(new Claim(JwtRegisteredClaimNames.Aud, audience));
-        }
+        //if (!string.IsNullOrWhiteSpace(audience))
+        //{
+        //    jwtClaims.Add(new Claim(JwtRegisteredClaimNames.Aud, audience));
+        //}
 
-        if (claims?.Any() is true)
-        {
-            var customClaims = new List<Claim>();
-            foreach (var (claim, values) in claims)
-            {
-                customClaims.AddRange(values.Select(value => new Claim(claim, value)));
-            }
+        //if (claims?.Any() is true)
+        //{
+        //    var customClaims = new List<Claim>();
+        //    foreach (var (claim, values) in claims)
+        //    {
+        //        customClaims.AddRange(values.Select(value => new Claim(claim, value)));
+        //    }
 
-            jwtClaims.AddRange(customClaims);
-        }
+        //    jwtClaims.AddRange(customClaims);
+        //}
 
         var expires = now.Add(this.options.Expiry);
 
