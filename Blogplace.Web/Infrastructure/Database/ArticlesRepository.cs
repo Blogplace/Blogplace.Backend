@@ -8,9 +8,9 @@ public interface IArticlesRepository
     Task Add(Article article);
     Task Delete(Guid id);
     Task<Article> Get(Guid id);
-    Task<IEnumerable<Article>> Search();
+    Task<IEnumerable<Article>> Search(int limit, Guid? tagId = null);
     Task Update(Article article);
-    Task<int> CountArticlesThatContainsTag(Guid tag);
+    Task<int> CountArticlesWithTag(Guid tag);
 }
 
 [ExcludeFromCodeCoverage]
@@ -30,9 +30,17 @@ public class ArticlesRepository : IArticlesRepository
         return Task.FromResult(result!);
     }
 
-    public Task<IEnumerable<Article>> Search()
+    public Task<IEnumerable<Article>> Search(int limit, Guid? tagId = null)
     {
-        var results = this._articles.AsEnumerable();
+        var results = this._articles.Where(x =>
+        {
+            if (tagId.HasValue && !x.TagIds.Contains(tagId.Value))
+            {
+                return false;
+            }
+
+            return true;
+        }).Take(limit);
         return Task.FromResult(results!);
     }
 
@@ -52,7 +60,7 @@ public class ArticlesRepository : IArticlesRepository
         return Task.CompletedTask;
     }
 
-    public Task<int> CountArticlesThatContainsTag(Guid tag)
+    public Task<int> CountArticlesWithTag(Guid tag)
     {
         var results = this._articles.Count(x => x.TagIds.Contains(tag));
         return Task.FromResult(results!);

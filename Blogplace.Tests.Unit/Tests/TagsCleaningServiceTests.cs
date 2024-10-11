@@ -60,7 +60,7 @@ public class TagsCleaningServiceTests
         var tagsToCheck = this.GetTagsToCheck();
         tagsToCheck.Should().Contain(id).And.ContainSingle();
 
-        this._articlesRepositoryMock.Verify(x => x.CountArticlesThatContainsTag(id), Times.Never);
+        this._articlesRepositoryMock.Verify(x => x.CountArticlesWithTag(id), Times.Never);
         this._tagsRepositoryMock.Verify(x => x.Delete(id), Times.Never);
 
         this.GetLastCleaning().Should().Be(lastCleaningTime);
@@ -87,7 +87,7 @@ public class TagsCleaningServiceTests
     [CancelAfter(3_000)]
     public async Task ShouldDelete_WhenArticlesNotContainsTag()
     {
-        this._articlesRepositoryMock.Setup(x => x.CountArticlesThatContainsTag(It.IsAny<Guid>())).Returns(Task.FromResult(0));
+        this._articlesRepositoryMock.Setup(x => x.CountArticlesWithTag(It.IsAny<Guid>())).Returns(Task.FromResult(0));
 
         await this.SetupService();
 
@@ -96,7 +96,7 @@ public class TagsCleaningServiceTests
         await this._channel.Publish(id);
         await this.WaitForService();
 
-        this._articlesRepositoryMock.Verify(x => x.CountArticlesThatContainsTag(id), Times.Once());
+        this._articlesRepositoryMock.Verify(x => x.CountArticlesWithTag(id), Times.Once());
         this._tagsRepositoryMock.Verify(x => x.Delete(id), Times.Once());
 
         this.GetLastCleaning().Should().BeAfter(DateTime.UtcNow.AddSeconds(-3));
@@ -106,7 +106,7 @@ public class TagsCleaningServiceTests
     [CancelAfter(3_000)]
     public async Task ShouldNotDelete_WhenArticlesContainsTag()
     {
-        this._articlesRepositoryMock.Setup(x => x.CountArticlesThatContainsTag(It.IsAny<Guid>())).Returns(Task.FromResult(1));
+        this._articlesRepositoryMock.Setup(x => x.CountArticlesWithTag(It.IsAny<Guid>())).Returns(Task.FromResult(1));
 
         await this.SetupService();
 
@@ -115,7 +115,7 @@ public class TagsCleaningServiceTests
         await this._channel.Publish(id);
         await this.WaitForService();
 
-        this._articlesRepositoryMock.Verify(x => x.CountArticlesThatContainsTag(id), Times.Once());
+        this._articlesRepositoryMock.Verify(x => x.CountArticlesWithTag(id), Times.Once());
         this._tagsRepositoryMock.Verify(x => x.Delete(id), Times.Never);
 
         this.GetLastCleaning().Should().BeAfter(DateTime.UtcNow.AddSeconds(-3));

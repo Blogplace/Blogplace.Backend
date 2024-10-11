@@ -10,9 +10,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blogplace.Tests.Unit", "Blogplace.Tests.Unit\Blogplace.Tests.Unit.csproj", "{BEB6B5E2-2D8D-48B4-9D3C-195086B4DC89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blogplace.Tests.Unit", "Blogplace.Tests.Unit\Blogplace.Tests.Unit.csproj", "{BEB6B5E2-2D8D-48B4-9D3C-195086B4DC89}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blogplace.Tests.Integration", "Blogplace.Tests.Integration\Blogplace.Tests.Integration.csproj", "{93B57502-D2CA-4AA5-A9FB-EC510CA0955C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blogplace.Tests.Integration", "Blogplace.Tests.Integration\Blogplace.Tests.Integration.csproj", "{93B57502-D2CA-4AA5-A9FB-EC510CA0955C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{720DC949-2F87-4375-BC99-DED7EDC51BF6}"
 EndProject
