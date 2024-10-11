@@ -70,10 +70,12 @@ public class CommentsTests : TestBase
         var commentId = (await response.Content.ReadFromJsonAsync<CreateCommentResponse>())!.Id;
         var comments = await this.GetArticleComments(client, articleId);
         comments.Should().NotBeEmpty();
-        comments.Should().ContainSingle(x =>
-            x.Id == commentId &&
-            x.ArticleId == articleId &&
-            x.Content == commentContent);
+
+        var comment = comments.Single(x => x.Id == commentId);
+        comment.ArticleId.Should().Be(articleId);
+        comment.Content.Should().Be(commentContent);
+        comment.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
+        comment.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
     }
     
     [Test]
@@ -150,10 +152,35 @@ public class CommentsTests : TestBase
 
         var comments = await this.GetArticleComments(client, articleId);
         comments.Should().NotBeEmpty();
-        comments.Should().ContainSingle(x =>
-            x.Id == commentId &&
-            x.ArticleId == articleId &&
-            x.Content == newContent);
+
+        var comment = comments.Single(x => x.Id == commentId);
+        comment.ArticleId.Should().Be(articleId);
+        comment.Content.Should().Be(newContent);
+        comment.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
+        comment.UpdatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1)).And.BeBefore(DateTime.UtcNow);
+        comment.UpdatedAt.Should().NotBe(comment.CreatedAt);
+    }
+
+    [Test]
+    public async Task Update_CommentShouldNotBeUpdatedByOtherUser()
+    {
+        //Arrange
+        var articleId = ArticlesRepositoryFake.StandardUserArticle!.Id;
+        var client = this._factory.CreateClient_Standard();
+        var commentId = await this.CreateComment(client, articleId, "TEST_CONTENT");
+
+        var otherClient = this._factory.CreateClient_AnotherStandard();
+
+        var request = new UpdateCommentRequest(commentId, "NEW_CONTENT");
+
+        //Act
+        var response = await otherClient.PostAsync($"{this.urlBaseV1}/Comments/Update", request);
+
+        //Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var comments = await this.GetArticleComments(client, articleId);
+        comments.Should().NotBeEmpty();
+        comments.Should().ContainSingle(x => x.Id == commentId && x.Content == "TEST_CONTENT");
     }
 
     [Test]
@@ -177,6 +204,27 @@ public class CommentsTests : TestBase
 
         var comments = await this.GetArticleComments(client, articleId);
         comments.Should().NotContain(x => x.Id == commentId);
+    }
+
+    [Test]
+    public async Task Delete_CommentShouldNotBeDeletedByOtherUser()
+    {
+        //Arrange
+        var articleId = ArticlesRepositoryFake.StandardUserArticle!.Id;
+        var client = this._factory.CreateClient_Standard();
+        var commentId = await this.CreateComment(client, articleId, "TEST_CONTENT");
+
+        var otherClient = this._factory.CreateClient_AnotherStandard();
+
+        var request = new DeleteCommentRequest(commentId);
+
+        //Act
+        var response = await otherClient.PostAsync($"{this.urlBaseV1}/Comments/Delete", request);
+
+        //Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var comments = await this.GetArticleComments(client, articleId);
+        comments.Should().ContainSingle(x => x.Id == commentId);
     }
 
     private async Task<Guid> CreateComment(ApiClient client, Guid articleId, string content, Guid? parentId = null)
