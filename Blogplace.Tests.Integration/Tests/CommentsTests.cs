@@ -54,9 +54,11 @@ public class CommentsTests : TestBase
     {
         //Arrange
         var client = this._factory.CreateClient_Standard();
+        var articleId = ArticlesRepositoryFake.StandardUserArticle!.Id;
+        var commentContent = "TEST_CONTENT_" + Guid.NewGuid();
         var request = new CreateCommentRequest(
-            ArticlesRepositoryFake.StandardUserArticle!.Id,
-            "TEST_COMMENT_CONTENT"
+            articleId,
+            commentContent
         );
 
         //Act
@@ -64,7 +66,14 @@ public class CommentsTests : TestBase
 
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        // TODO: check if the comment actually exist in the repository
+
+        var commentId = (await response.Content.ReadFromJsonAsync<CreateCommentResponse>())!.Id;
+        var comments = await this.GetArticleComments(client, articleId);
+        comments.Should().NotBeEmpty();
+        comments.Should().ContainSingle(x =>
+            x.Id == commentId &&
+            x.ArticleId == articleId &&
+            x.Content == commentContent);
     }
     
     [Test]
@@ -120,13 +129,14 @@ public class CommentsTests : TestBase
     {
         //Arrange
         var client = this._factory.CreateClient_Standard();
+        var articleId = ArticlesRepositoryFake.StandardUserArticle!.Id;
         var commentId = await this.CreateComment(
             client,
-            ArticlesRepositoryFake.StandardUserArticle!.Id,
+            articleId,
             "TEST_CONTENT"
         );
 
-        var newContent = "UPDATED_CONTENT";
+        var newContent = "UPDATED_CONTENT_" + Guid.NewGuid();
         var request = new UpdateCommentRequest(
             commentId,
             newContent
@@ -137,7 +147,13 @@ public class CommentsTests : TestBase
 
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        // TODO: Check if the comment was updated in the repository
+
+        var comments = await this.GetArticleComments(client, articleId);
+        comments.Should().NotBeEmpty();
+        comments.Should().ContainSingle(x =>
+            x.Id == commentId &&
+            x.ArticleId == articleId &&
+            x.Content == newContent);
     }
 
     [Test]
@@ -145,9 +161,10 @@ public class CommentsTests : TestBase
     {
         //Arrange
         var client = this._factory.CreateClient_Standard();
+        var articleId = ArticlesRepositoryFake.StandardUserArticle!.Id;
         var commentId = await this.CreateComment(
             client,
-            ArticlesRepositoryFake.StandardUserArticle!.Id,
+            articleId,
             "TEST_COMMENT_CONTENT"
         );
         var request = new DeleteCommentRequest(commentId);
@@ -157,7 +174,9 @@ public class CommentsTests : TestBase
 
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        // TODO: Check if the comment doesn't exist in the repository
+
+        var comments = await this.GetArticleComments(client, articleId);
+        comments.Should().NotContain(x => x.Id == commentId);
     }
 
     private async Task<Guid> CreateComment(ApiClient client, Guid articleId, string content, Guid? parentId = null)
@@ -167,5 +186,14 @@ public class CommentsTests : TestBase
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var commentId = (await response.Content.ReadFromJsonAsync<CreateCommentResponse>())!.Id;
         return commentId;
+    }
+
+    private async Task<CommentDto[]> GetArticleComments(ApiClient client, Guid articleId)
+    {
+        var request = new SearchCommentsByArticleRequest(articleId);
+        var response = await client.PostAsync($"{this.urlBaseV1}/Comments/SearchByArticle", request);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var comments = (await response.Content.ReadFromJsonAsync<SearchCommentsResponse>())!.Comments.ToArray();
+        return comments.ToArray();
     }
 }
