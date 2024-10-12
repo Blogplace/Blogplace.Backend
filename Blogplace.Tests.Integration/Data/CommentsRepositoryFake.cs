@@ -42,7 +42,6 @@ public class CommentsRepositoryFake : ICommentsRepository
             var result = this.Comments.Single(x => x.Id == id);
             return Task.FromResult(result!);
         }
-        
     }
 
     public Task<IEnumerable<Comment>> GetByArticle(Guid articleId)
