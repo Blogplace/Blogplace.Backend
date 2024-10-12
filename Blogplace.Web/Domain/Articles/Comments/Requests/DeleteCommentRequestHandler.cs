@@ -1,5 +1,6 @@
 ﻿using Blogplace.Web.Auth;
 using Blogplace.Web.Commons.Logging;
+using Blogplace.Web.Domain.Articles.Comments.Requests;
 using Blogplace.Web.Exceptions;
 using Blogplace.Web.Infrastructure.Database;
 using MediatR;
@@ -21,7 +22,7 @@ public class DeleteCommentRequestHandler(
         var commentId = request.CommentId;
         // TODO: Request only author property of specified article
         var comment = await repository.Get(commentId);
-        // TODO: What if specified comment doesn't exist in the repository? Currently repository.Get throws an exception
+        // TODO: What if specified comment doesn't exist in the repository? Currently, repository.Get throws an exception
 
         var userId = sessionStorage.UserId;
         if (comment.AuthorId != userId)
@@ -29,6 +30,21 @@ public class DeleteCommentRequestHandler(
             throw new UserPermissionDeniedException("Requester is not author of article");
         }
 
+        if (comment.ParentId.HasValue)
+        {
+            ChildCountSharedLock.Mutex.WaitOne();
+            try
+            {
+                var parentComment = await repository.Get(comment.ParentId.Value);
+                parentComment.ChildCount--;
+                await repository.Update(parentComment);
+            }
+            finally
+            {
+                ChildCountSharedLock.Mutex.ReleaseMutex();
+            }
+        }
+        
         await repository.Delete(commentId);
         eventLogger.UserDeletedComment(userId, commentId);
     }

@@ -1,8 +1,10 @@
 ﻿using Blogplace.Tests.Integration.Data;
 using Blogplace.Web.Domain.Comments;
 using Blogplace.Web.Domain.Comments.Requests;
+using Blogplace.Web.Infrastructure.Database;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -227,9 +229,82 @@ public class CommentsTests : TestBase
         comments.Should().ContainSingle(x => x.Id == commentId);
     }
 
+    [Test]
+    public async Task Create_ChildCountShouldIncrease()
+    {
+        //Arrange
+        var client = this._factory.CreateClient_Standard();
+        var articleId = ArticlesRepositoryFake.StandardUserArticle!.Id;
+        var parentCommentId = await this.CreateComment(client, articleId, "TEST_CONTENT");
+
+        // We always want to have minimum 2 tasks to check for the possible race condition
+        var taskCount = Math.Max(2, Environment.ProcessorCount / 2 + 1);
+        var tasks = new Task[taskCount];
+        // Barrier is used to run all the tasks in the same time
+        var barrier = new Barrier(taskCount);
+
+        //Act
+        for (var i = 0; i < tasks.Length; i++)
+        {
+            tasks[i] = Task.Run(async () =>
+            {
+                barrier.SignalAndWait();
+                await this.CreateComment(client, articleId, "TEST_CONTENT", parentCommentId);
+            });
+        }
+
+        await Task.WhenAll(tasks);
+
+        //Assert
+        var repository = this._factory.Services.GetService<ICommentsRepository>()!;
+        (await repository.Get(parentCommentId)).ChildCount.Should().Be(taskCount);
+    }
+
+    [Test]
+    public async Task Delete_ChildCountShouldDecrease()
+    {
+        //Arrange
+        var client = this._factory.CreateClient_Standard();
+        var articleId = ArticlesRepositoryFake.StandardUserArticle!.Id;
+        var parentCommentId = await this.CreateComment(client, articleId, "TEST_CONTENT");
+
+        // We always want to have minimum 2 tasks to check for the possible race condition
+        var taskCount = Math.Max(2, Environment.ProcessorCount / 2 + 1);
+        var tasks = new Task[taskCount];
+        // Barrier is used to run all the tasks in the same time
+        var barrier = new Barrier(taskCount);
+
+        Task DeleteCommentTask()
+        {
+            var commentId = this.CreateComment(client, articleId, "TEST_CONTENT", parentCommentId)
+                .GetAwaiter()
+                .GetResult();
+
+            return Task.Run(async () =>
+            {
+                barrier.SignalAndWait();
+                var response = await client.PostAsync($"{this.urlBaseV1}/Comments/Delete",
+                    new DeleteCommentRequest(commentId));
+                response.StatusCode.Should().Be(HttpStatusCode.OK);
+            });
+        }
+
+        //Act
+        for (var i = 0; i < tasks.Length; i++)
+        {
+            tasks[i] = DeleteCommentTask();
+        }
+
+        await Task.WhenAll(tasks);
+
+        //Assert
+        var repository = this._factory.Services.GetService<ICommentsRepository>()!;
+        (await repository.Get(parentCommentId)).ChildCount.Should().Be(0);
+    }
+
     private async Task<Guid> CreateComment(ApiClient client, Guid articleId, string content, Guid? parentId = null)
     {
-        var request = new CreateCommentRequest(articleId, content);
+        var request = new CreateCommentRequest(articleId, content, parentId);
         var response = await client.PostAsync($"{this.urlBaseV1}/Comments/Create", request);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var commentId = (await response.Content.ReadFromJsonAsync<CreateCommentResponse>())!.Id;

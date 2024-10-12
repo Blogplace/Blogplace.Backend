@@ -17,43 +17,63 @@ public interface ICommentsRepository
 public class CommentsRepository : ICommentsRepository
 {
     private readonly List<Comment> _comments = [];
+    private static readonly object obj = new(); 
 
     public Task Add(Comment comment)
     {
-        this._comments.Add(comment);
-        return Task.CompletedTask;
+        lock (obj)
+        {
+            this._comments.Add(comment);
+            return Task.CompletedTask;
+        }
     }
 
     public Task<Comment> Get(Guid id)
     {
-        var result = this._comments.Single(x => x.Id == id);
-        return Task.FromResult(result!);
+        lock (obj)
+        {
+            var result = this._comments.Single(x => x.Id == id);
+            return Task.FromResult(result!);
+        }
     }
 
     public Task<IEnumerable<Comment>> GetByArticle(Guid articleId)
     {
-        var result = this._comments.Where(x => x.ArticleId == articleId && !x.ParentId.HasValue);
-        return Task.FromResult(result);
+        lock (obj)
+        {
+            var result = this._comments.Where(x => x.ArticleId == articleId && !x.ParentId.HasValue);
+            return Task.FromResult(result);
+        }
     }
 
     public Task<IEnumerable<Comment>> GetByParent(Guid parentId)
     {
-        var result = this._comments.Where(x => x.ParentId == parentId);
-        return Task.FromResult(result);
+        lock (obj)
+        {
+            var result = this._comments.Where(x => x.ParentId == parentId);
+            return Task.FromResult(result);
+        }
     }
 
     public Task Update(Comment comment)
     {
-        var item = this._comments.Single(x => x.Id == comment.Id);
-        item.Content = comment.Content;
-        item.UpdatedAt = DateTime.UtcNow;
-        return Task.CompletedTask;
+        lock (obj)
+        {
+            var item = this._comments.Single(x => x.Id == comment.Id);
+            item.Content = comment.Content;
+            item.ChildCount = comment.ChildCount;
+            item.UpdatedAt = DateTime.UtcNow;
+            return Task.CompletedTask;
+        }
     }
 
     public Task Delete(Guid id)
     {
-        var item = this._comments.Single(x => x.Id == id);
-        this._comments.Remove(item);
-        return Task.CompletedTask;
+        lock (obj)
+        {
+            var item = this._comments.Single(x => x.Id == id);
+            this._comments.Remove(item);
+            return Task.CompletedTask;
+        }
     }
 }

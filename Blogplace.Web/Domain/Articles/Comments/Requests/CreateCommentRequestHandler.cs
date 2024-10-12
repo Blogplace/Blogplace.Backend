@@ -1,5 +1,6 @@
 ﻿using Blogplace.Web.Auth;
 using Blogplace.Web.Commons.Logging;
+using Blogplace.Web.Domain.Articles.Comments.Requests;
 using Blogplace.Web.Infrastructure.Database;
 using MediatR;
 
@@ -12,7 +13,7 @@ public record CreateCommentRequest(Guid ArticleId, string Content, Guid? ParentI
 
 public class CreateCommentRequestHandler(
     ISessionStorage sessionStorage,
-    ICommentsRepository commentsRepository,
+    ICommentsRepository repository,
     IEventLogger logger
 ) : IRequestHandler<CreateCommentRequest, CreateCommentResponse>
 {
@@ -20,12 +21,26 @@ public class CreateCommentRequestHandler(
         CreateCommentRequest request,
         CancellationToken cancellationToken)
     {
+        var userId = sessionStorage.UserId;
         // TODO: Check user permissions
 
-        var userId = sessionStorage.UserId;
-
+        if (request.ParentId.HasValue)
+        {
+            ChildCountSharedLock.Mutex.WaitOne();
+            try
+            {
+                var parentComment = await repository.Get(request.ParentId.Value);
+                parentComment.ChildCount++;
+                await repository.Update(parentComment);
+            }
+            finally
+            {
+                ChildCountSharedLock.Mutex.ReleaseMutex();
+            }
+        }
+        
         var comment = new Comment(request.ArticleId, userId, request.Content, request.ParentId);
-        await commentsRepository.Add(comment);
+        await repository.Add(comment);
 
         logger.UserCreatedComment(userId, comment.Id);
 
