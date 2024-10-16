@@ -5,6 +5,7 @@ namespace Blogplace.Tests.Integration.Data;
 
 public class ArticlesRepositoryFake : IArticlesRepository
 {
+    public static Article? StandardUserArticle { get; set; }
     public static Article? NonePermissionsUserArticle { get; set; }
 
     public List<Article> Articles { get; private set; } = [];
@@ -15,12 +16,17 @@ public class ArticlesRepositoryFake : IArticlesRepository
     {
         lock (obj)
         {
+            StandardUserArticle ??=
+                new Article("TEST_TITLE", "TEST_CONTENT", UsersRepositoryFake.Standard!.Id,
+                    [TagsRepositoryFake.DefaultTag!]);
             NonePermissionsUserArticle ??=
-                new Article("TEST_TITLE", "TEST_CONTENT", UsersRepositoryFake.NonePermissions!.Id, [TagsRepositoryFake.DefaultTag!]);
+                new Article("TEST_TITLE", "TEST_CONTENT", UsersRepositoryFake.NonePermissions!.Id,
+                    [TagsRepositoryFake.DefaultTag!]);
         }
 
         this.Articles =
         [
+            StandardUserArticle,
             NonePermissionsUserArticle
         ];
     }
