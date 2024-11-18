@@ -1,14 +1,11 @@
 ﻿using Blogplace.Web.Infrastructure.Database;
-using System.Xml;
-using System;
-using System.ServiceModel.Syndication;
+using Blogplace.Web.Domain.Articles;
+using Blogplace.Web.Commons;
 
 namespace Blogplace.Web.Background.Jobs;
 
-public class ImportBlogArticlesJob(IArticlesRepository articlesRepository) : IJob
+public class ImportBlogArticlesJob(IArticlesRepository articlesRepository, IRssDownloader rssDownloader) : IJob
 {
-    private readonly HttpClient client = new();
-
     private readonly Uri[] feeds = 
     [
         //todo database list
@@ -25,7 +22,8 @@ public class ImportBlogArticlesJob(IArticlesRepository articlesRepository) : IJo
         {
             try
             {
-                await this.Import(feed, DateTime.UtcNow.Date);
+                var lastUpdate = await articlesRepository.GetLastSourceUpdate(feed);
+                await this.Import(feed, lastUpdate);
             }
             catch //todo
             {
@@ -35,19 +33,31 @@ public class ImportBlogArticlesJob(IArticlesRepository articlesRepository) : IJo
 
     private async Task Import(Uri source, DateTime lastUpdateUtc)
     {
-        var rssStream = await (await this.client.GetAsync(source)).Content.ReadAsStreamAsync();
-        using var reader = XmlReader.Create(rssStream);
-        var feed = SyndicationFeed.Load(reader);
+        var feed = await rssDownloader.Download(source);
 
         if (lastUpdateUtc > feed.LastUpdatedTime.UtcDateTime)
         {
             return;
         }
 
-        foreach (var article in feed.Items.Where(x => lastUpdateUtc > x.LastUpdatedTime.UtcDateTime))
+        foreach (var item in feed.Items.Where(x => x.LastUpdatedTime.UtcDateTime > lastUpdateUtc))
         {
-            var id = article.Id;
-            //todo change article model
+            var id = item.Id;
+            var title = item.Title?.Text ?? string.Empty;
+            var content = item.Summary?.Text ?? string.Empty;
+            var url = item.Links.First().Uri;
+            var article = await articlesRepository.Get(id);
+            if (article != null) 
+            {
+                article.Title = title;
+                article.Content = content;
+                await articlesRepository.Update(article);
+            }
+            else
+            {
+                article = new Article(id, source, url, title, content);
+                await articlesRepository.Add(article);
+            }
         }
     }
 }

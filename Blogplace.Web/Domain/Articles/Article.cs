@@ -1,9 +1,10 @@
 ﻿namespace Blogplace.Web.Domain.Articles;
 
-public class Article(string externalId, string title, string content/*, IEnumerable<Tag> tags*/)
+public class Article(string externalId, Uri source, Uri url, string title, string content/*, IEnumerable<Tag> tags*/)
 {
     public string Id { get; } = externalId;
-    public Uri Url { get; }
+    public Uri Source { get; } = source;
+    public Uri Url { get; } = url;
     public string Title { get; set; } = title;
     public string Content { get; set; } = content;
     public long Views { get; set; }

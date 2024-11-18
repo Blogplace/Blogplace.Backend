@@ -7,10 +7,11 @@ public interface IArticlesRepository
 {
     Task Add(Article article);
     Task Delete(string id);
-    Task<Article> Get(string id);
+    Task<Article?> Get(string id);
     Task<IEnumerable<Article>> Search(int limit/*, Guid? tagId = null*/);
     Task Update(Article article);
     //Task<int> CountArticlesWithTag(Guid tag);
+    Task<DateTime> GetLastSourceUpdate(Uri source);
 }
 
 [ExcludeFromCodeCoverage]
@@ -24,10 +25,10 @@ public class ArticlesRepository : IArticlesRepository
         return Task.CompletedTask;
     }
 
-    public Task<Article> Get(string id)
+    public Task<Article?> Get(string id)
     {
-        var result = this._articles.Single(x => x.Id == id);
-        return Task.FromResult(result!);
+        var result = this._articles.SingleOrDefault(x => x.Id == id);
+        return Task.FromResult(result);
     }
 
     public Task<IEnumerable<Article>> Search(int limit/*, Guid? tagId = null*/)
@@ -42,6 +43,16 @@ public class ArticlesRepository : IArticlesRepository
             return true;
         })*/.Take(limit);
         return Task.FromResult(results!);
+    }
+
+    //todo table to it
+    public Task<DateTime> GetLastSourceUpdate(Uri source)
+    {
+        var result = this._articles
+            .Where(x => x.Source == source)
+            .OrderByDescending(x => x.UpdatedAt)
+            .FirstOrDefault()?.UpdatedAt ?? DateTime.MinValue;
+        return Task.FromResult(result);
     }
 
     public Task Update(Article article)

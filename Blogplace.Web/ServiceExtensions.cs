@@ -1,6 +1,7 @@
 using Blogplace.Web.Auth;
 using Blogplace.Web.Background;
 using Blogplace.Web.Background.Jobs;
+using Blogplace.Web.Commons;
 using Blogplace.Web.Commons.Consts;
 using Blogplace.Web.Commons.Logging;
 using Blogplace.Web.Configuration;
@@ -185,6 +186,7 @@ public static class ServiceExtensions
         services.AddHangfireServer();
 
         services.AddSingleton<ImportBlogArticlesJob>();
+        services.AddSingleton<IRssDownloader, RssDownloader>();
 
         return services;
     }
