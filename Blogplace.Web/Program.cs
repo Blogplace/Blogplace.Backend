@@ -1,6 +1,10 @@
 using Blogplace.Web;
 using Blogplace.Web.Auth;
+using Blogplace.Web.Background.Jobs;
+using Blogplace.Web.Commons.Logging;
 using Blogplace.Web.Exceptions;
+using Hangfire;
+using Hangfire.Common;
 using Serilog;
 try
 {
@@ -40,8 +44,10 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
 
-    app.UseExceptionHandler(_ => { });
+    app.UseHangfireDashboard();
+    Recurring<ImportBlogArticlesJob>(app, Cron.Daily(16));
 
+    app.UseExceptionHandler(_ => { });
     app.Use(async (ctx, next) =>
     {
         var sessionStorage = ctx.RequestServices.GetService<ISessionStorage>()!;
@@ -59,6 +65,15 @@ catch (Exception ex)
 finally
 {
     Log.CloseAndFlush();
+}
+
+void Recurring<T>(WebApplication app, string cronExpression)
+    where T : IJob
+{
+    var name = typeof(T).Name;
+    var job = app!.Services.GetService<T>()!;
+    var jobsClient = app!.Services.GetService<IRecurringJobManagerV2>();
+    jobsClient.AddOrUpdate(name, () => job.Run(), cronExpression);
 }
 
 public partial class Program
