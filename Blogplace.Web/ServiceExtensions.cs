@@ -1,10 +1,14 @@
 using Blogplace.Web.Auth;
 using Blogplace.Web.Background;
+using Blogplace.Web.Background.Jobs;
+using Blogplace.Web.Commons;
 using Blogplace.Web.Commons.Consts;
 using Blogplace.Web.Commons.Logging;
 using Blogplace.Web.Configuration;
 using Blogplace.Web.Email;
 using Blogplace.Web.Infrastructure.Database;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -152,8 +156,8 @@ public static class ServiceExtensions
     {
         services.AddSingleton<IArticlesRepository, ArticlesRepository>();
         services.AddSingleton<IUsersRepository, UsersRepository>();
-        services.AddSingleton<ITagsRepository, TagsRepository>();
-        services.AddSingleton<ICommentsRepository, CommentsRepository>();
+        //services.AddSingleton<ITagsRepository, TagsRepository>();
+        //services.AddSingleton<ICommentsRepository, CommentsRepository>();
 
         return services;
     }
@@ -168,8 +172,21 @@ public static class ServiceExtensions
 
     public static IServiceCollection SetupBackground(this IServiceCollection services)
     {
-        services.AddSingleton<ITagsCleaningChannel, TagsCleaningChannel>();
-        services.AddHostedService<TagsCleaningService>();
+        //services.AddSingleton<ITagsCleaningChannel, TagsCleaningChannel>();
+        //services.AddHostedService<TagsCleaningService>();
+
+        services
+            .AddHangfire(configuration => configuration
+            .UseSerilogLogProvider()
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseMemoryStorage()); //todo db
+
+        services.AddHangfireServer();
+
+        services.AddSingleton<ImportBlogArticlesJob>();
+        services.AddSingleton<IRssDownloader, RssDownloader>();
 
         return services;
     }

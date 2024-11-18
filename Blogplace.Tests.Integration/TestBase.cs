@@ -22,9 +22,9 @@ public abstract class TestBase
             .WithWebHostBuilder(builder => builder.ConfigureServices(x => 
             {
                 x.AddSingleton<IUsersRepository, UsersRepositoryFake>();
-                x.AddSingleton<IArticlesRepository, ArticlesRepositoryFake>();
-                x.AddSingleton<ITagsRepository, TagsRepositoryFake>();
-                x.AddSingleton<ICommentsRepository, CommentsRepositoryFake>();
+                //x.AddSingleton<IArticlesRepository, ArticlesRepositoryFake>();
+                //x.AddSingleton<ITagsRepository, TagsRepositoryFake>();
+                //x.AddSingleton<ICommentsRepository, CommentsRepositoryFake>();
                 registerServices?.Invoke(x); 
             }));
 
@@ -36,9 +36,9 @@ public abstract class TestBase
     private static void InitializeRepositories(IServiceProvider services)
     {
         ((UsersRepositoryFake)services.GetService<IUsersRepository>()!).Init();
-        ((TagsRepositoryFake)services.GetService<ITagsRepository>()!).Init();
-        ((ArticlesRepositoryFake)services.GetService<IArticlesRepository>()!).Init();
-        ((CommentsRepositoryFake)services.GetService<ICommentsRepository>()!).Init();
+        //((TagsRepositoryFake)services.GetService<ITagsRepository>()!).Init();
+        //((ArticlesRepositoryFake)services.GetService<IArticlesRepository>()!).Init();
+        //((CommentsRepositoryFake)services.GetService<ICommentsRepository>()!).Init();
     }
 }
 
