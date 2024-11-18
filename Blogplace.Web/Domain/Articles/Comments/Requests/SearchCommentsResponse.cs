@@ -1,3 +1,3 @@
-﻿namespace Blogplace.Web.Domain.Comments;
+﻿//namespace Blogplace.Web.Domain.Comments;
 
-public record SearchCommentsResponse(IEnumerable<CommentDto> Comments);
+//public record SearchCommentsResponse(IEnumerable<CommentDto> Comments);

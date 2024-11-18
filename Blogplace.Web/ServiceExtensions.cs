@@ -156,7 +156,7 @@ public static class ServiceExtensions
         services.AddSingleton<IArticlesRepository, ArticlesRepository>();
         services.AddSingleton<IUsersRepository, UsersRepository>();
         services.AddSingleton<ITagsRepository, TagsRepository>();
-        services.AddSingleton<ICommentsRepository, CommentsRepository>();
+        //services.AddSingleton<ICommentsRepository, CommentsRepository>();
 
         return services;
     }
