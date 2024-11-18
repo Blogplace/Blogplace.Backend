@@ -155,7 +155,7 @@ public static class ServiceExtensions
     {
         services.AddSingleton<IArticlesRepository, ArticlesRepository>();
         services.AddSingleton<IUsersRepository, UsersRepository>();
-        services.AddSingleton<ITagsRepository, TagsRepository>();
+        //services.AddSingleton<ITagsRepository, TagsRepository>();
         //services.AddSingleton<ICommentsRepository, CommentsRepository>();
 
         return services;
@@ -171,8 +171,8 @@ public static class ServiceExtensions
 
     public static IServiceCollection SetupBackground(this IServiceCollection services)
     {
-        services.AddSingleton<ITagsCleaningChannel, TagsCleaningChannel>();
-        services.AddHostedService<TagsCleaningService>();
+        //services.AddSingleton<ITagsCleaningChannel, TagsCleaningChannel>();
+        //services.AddHostedService<TagsCleaningService>();
 
         services
             .AddHangfire(configuration => configuration
