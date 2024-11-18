@@ -1,8 +1,9 @@
 ﻿namespace Blogplace.Web.Domain.Articles;
 
-public class Article(string title, string content, Guid authorId, IEnumerable<Tag> tags)
+public class Article(string externalId, string title, string content, IEnumerable<Tag> tags)
 {
-    public Guid Id { get; } = Guid.NewGuid();
+    public string Id { get; } = externalId;
+    public Uri Url { get; }
     public string Title { get; set; } = title;
     public string Content { get; set; } = content;
     public long Views { get; set; }
@@ -10,6 +11,4 @@ public class Article(string title, string content, Guid authorId, IEnumerable<Ta
 
     public DateTime CreatedAt { get; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-    public Guid AuthorId { get; } = authorId;
 }

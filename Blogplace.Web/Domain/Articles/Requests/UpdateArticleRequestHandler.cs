@@ -7,7 +7,7 @@ using MediatR;
 
 namespace Blogplace.Web.Domain.Articles.Requests;
 
-public record UpdateArticleRequest(Guid Id, string? NewTitle = null, string? NewContent = null, string[]? Tags = null) : IRequest;
+public record UpdateArticleRequest(string Id, string? NewTitle = null, string? NewContent = null, string[]? Tags = null) : IRequest;
 
 public class UpdateArticleRequestHandler(
     ISessionStorage sessionStorage,
@@ -31,10 +31,10 @@ public class UpdateArticleRequestHandler(
         //todo get only author of article
         var article = await repository.Get(request.Id);
 
-        if (article.AuthorId != sessionStorage.UserId)
-        {
-            throw new UserPermissionDeniedException("Requester is not author of article");
-        }
+        //if (article.AuthorId != sessionStorage.UserId)
+        //{
+        //    throw new UserPermissionDeniedException("Requester is not author of article");
+        //}
 
         if (request.NewTitle != null)
         {

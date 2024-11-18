@@ -8,10 +8,10 @@ public interface IEventLogger
     void UserSignedOut(Guid userId);
     void UserCreated(Guid userId);
     void UserUpdatedProfile(Guid userId);
-    void UserCreatedArticle(Guid userId, Guid articleId);
-    void UserDeletedArticle(Guid userId, Guid articleId);
-    void UserUpdatedArticle(Guid userId, Guid articleId);
-    void UserViewedArticle(Guid userId, Guid articleId);
+    void UserCreatedArticle(Guid userId, string articleId);
+    void UserDeletedArticle(Guid userId, string articleId);
+    void UserUpdatedArticle(Guid userId, string articleId);
+    void UserViewedArticle(Guid userId, string articleId);
     void UserCreatedComment(Guid userId, Guid commentId);
     void UserUpdatedComment(Guid userId, Guid commentId);
     void UserDeletedComment(Guid userId, Guid commentId);
@@ -34,16 +34,16 @@ public class EventLogger(ILogger logger) : IEventLogger
     public void UserUpdatedProfile(Guid userId)
         => this.Info(nameof(this.UserUpdatedProfile), new { UserId = userId });
 
-    public void UserCreatedArticle(Guid userId, Guid articleId)
+    public void UserCreatedArticle(Guid userId, string articleId)
         => this.Info(nameof(this.UserCreatedArticle), new { UserId = userId, ArticleId = articleId });
 
-    public void UserUpdatedArticle(Guid userId, Guid articleId)
+    public void UserUpdatedArticle(Guid userId, string articleId)
         => this.Info(nameof(this.UserUpdatedArticle), new { UserId = userId, ArticleId = articleId });
 
-    public void UserDeletedArticle(Guid userId, Guid articleId)
+    public void UserDeletedArticle(Guid userId, string articleId)
         => this.Info(nameof(this.UserDeletedArticle), new { UserId = userId, ArticleId = articleId });
 
-    public void UserViewedArticle(Guid userId, Guid articleId)
+    public void UserViewedArticle(Guid userId, string articleId)
         => this.Info(nameof(this.UserViewedArticle), new { UserId = userId, ArticleId = articleId });
 
     public void UserCreatedComment(Guid userId, Guid commentId)

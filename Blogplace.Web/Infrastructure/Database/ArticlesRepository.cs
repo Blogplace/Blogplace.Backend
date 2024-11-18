@@ -6,8 +6,8 @@ namespace Blogplace.Web.Infrastructure.Database;
 public interface IArticlesRepository
 {
     Task Add(Article article);
-    Task Delete(Guid id);
-    Task<Article> Get(Guid id);
+    Task Delete(string id);
+    Task<Article> Get(string id);
     Task<IEnumerable<Article>> Search(int limit, Guid? tagId = null);
     Task Update(Article article);
     Task<int> CountArticlesWithTag(Guid tag);
@@ -24,7 +24,7 @@ public class ArticlesRepository : IArticlesRepository
         return Task.CompletedTask;
     }
 
-    public Task<Article> Get(Guid id)
+    public Task<Article> Get(string id)
     {
         var result = this._articles.Single(x => x.Id == id);
         return Task.FromResult(result!);
@@ -53,7 +53,7 @@ public class ArticlesRepository : IArticlesRepository
         return Task.CompletedTask;
     }
 
-    public Task Delete(Guid id)
+    public Task Delete(string id)
     {
         var item = this._articles.Single(x => x.Id == id);
         this._articles.Remove(item);

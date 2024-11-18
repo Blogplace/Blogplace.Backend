@@ -17,10 +17,10 @@ public class ArticlesRepositoryFake : IArticlesRepository
         lock (obj)
         {
             StandardUserArticle ??=
-                new Article("TEST_TITLE", "TEST_CONTENT", UsersRepositoryFake.Standard!.Id,
+                new Article(Guid.NewGuid().ToString(), "TEST_TITLE", "TEST_CONTENT",
                     [TagsRepositoryFake.DefaultTag!]);
             NonePermissionsUserArticle ??=
-                new Article("TEST_TITLE", "TEST_CONTENT", UsersRepositoryFake.NonePermissions!.Id,
+                new Article(Guid.NewGuid().ToString(), "TEST_TITLE", "TEST_CONTENT",
                     [TagsRepositoryFake.DefaultTag!]);
         }
 
@@ -37,7 +37,7 @@ public class ArticlesRepositoryFake : IArticlesRepository
         return Task.CompletedTask;
     }
 
-    public Task<Article> Get(Guid id)
+    public Task<Article> Get(string id)
     {
         var result = this.Articles.Single(x => x.Id == id);
         return Task.FromResult(result!);
@@ -66,7 +66,7 @@ public class ArticlesRepositoryFake : IArticlesRepository
         return Task.CompletedTask;
     }
 
-    public Task Delete(Guid id)
+    public Task Delete(string id)
     {
         var item = this.Articles.Single(x => x.Id == id);
         this.Articles.Remove(item);
